@@ -1,0 +1,1 @@
+from .auth_views import register_user, login_user
