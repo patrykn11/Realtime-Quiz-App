@@ -1,10 +1,12 @@
 
 import { useContext, useState, useEffect } from "react";
 import { AuthContext } from "../components/loginContext";
+import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
 export default function CreateRoomPage() {
 
   const {token, setToken} = useContext(AuthContext);
+  const navigate = useNavigate();
   const [response, setResponse] = useState("");
 
   const create_room = async () => {
@@ -17,6 +19,7 @@ export default function CreateRoomPage() {
       })
       const data = await res.json();
       setResponse(data.room_code);
+      navigate(`/LobbyRoom/${data.room_code}`);
 
     }
     catch (err){

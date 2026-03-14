@@ -8,6 +8,7 @@ import MainLayout from './Layout/MainLayout';
 import LoginPage from './pages/loginPage';
 import { AuthProvider } from './components/loginContext';
 import CreateRoomPage from './pages/createRoomPage';
+import LobbyRoomPage from './pages/LobbyRoomPage'
 function App() {
   const [count, setCount] = useState(0)
 
@@ -19,7 +20,7 @@ function App() {
         <Route path='pinPage' element={<PinPage/>} />
         <Route path='loginPage' element={<LoginPage/>} />
         <Route path='createRoom' element={<CreateRoomPage/>}/>
-        <Route path='lobbyRoom' /*element={<LobbyRoomPage/>}*//>
+        <Route path='LobbyRoom/:room_code' element={<LobbyRoomPage/>}/>
       </Route>
     </Routes>
     </AuthProvider>
