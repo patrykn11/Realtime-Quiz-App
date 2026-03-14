@@ -7,28 +7,22 @@ export default function CreateRoomPage() {
   const {token, setToken} = useContext(AuthContext);
   const [response, setResponse] = useState("");
 
-  useEffect(() => {
+  const create_room = async () => {
+    try{
+      const res = await fetch(`${API_URL}/api/create_room/`, {
+        method:"POST",
+        headers:{
+          "Authorization": `Bearer ${token}`
+        }
+      })
+      const data = await res.json();
+      setResponse(data.room_code);
 
-    const fetchData = async () => {
-      try {
-        const res = await fetch(`${API_URL}/api/simple_endpoint`, {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${token}`
-          }
-        });
-
-        const data = await res.json();
-        setResponse(data.status);
-
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    fetchData();
-
-  }, [token]);
+    }
+    catch (err){
+      setResponse(err);
+    }
+  };
 
     
 
@@ -48,7 +42,8 @@ export default function CreateRoomPage() {
         active:scale-95
         transition-all
         duration-150
-      ">
+      "
+      onClick={() => create_room()}>
         Create Quiz Room, {response}
       </button>
     </div>
