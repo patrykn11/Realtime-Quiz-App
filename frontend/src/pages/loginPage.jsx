@@ -4,10 +4,10 @@ import { AuthContext } from "../components/loginContext";
 import { API_URL } from "../config";
 export default function LoginPage() {
   const {token, setToken } = useContext(AuthContext);
-  const [login, setLogin] = useState("")
-  const [password, setPassword] = useState("")
-  const [Reglogin, setRegLogin] = useState("")
-  const [Regpassword, setRegPassword] = useState("")
+  const [login, setLogin] = useState("");
+  const [password, setPassword] = useState("");
+  const [Reglogin, setRegLogin] = useState("");
+  const [Regpassword, setRegPassword] = useState("");
 
   const loginUser = async (login, password) => {
     try {
