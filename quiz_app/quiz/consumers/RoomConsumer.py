@@ -29,7 +29,7 @@ class RoomConsumer(AsyncWebsocketConsumer):
         if not room_exists:
             await self.close(code=4404)
             return
-
+        
         self.group_name = f"room_{self.room_code}"
         await self.channel_layer.group_add(self.group_name, self.channel_name)
         await self.accept()
@@ -52,7 +52,10 @@ class RoomConsumer(AsyncWebsocketConsumer):
             await self.channel_layer.group_discard(self.group_name, self.channel_name)
 
         login = self.user.username
-        await redis_client.srem(f"room:{self.room_code}:users", login)
+        curr_status = await redis_client.hget(f"room:{self.room_code}", "status")
+
+        if not curr_status or curr_status.decode() != "playing":
+            await redis_client.srem(f"room:{self.room_code}:users", login)
 
         users = await redis_client.smembers(f"room:{self.room_code}:users")
 
@@ -65,6 +68,23 @@ class RoomConsumer(AsyncWebsocketConsumer):
                     self.group_name,
                     {"type": "users_list", "users": [u.decode() for u in users]}
                 )
+
+    async def receive(self, text_data):
+        if text_data:
+            data = json.loads(text_data)
+            if data.get("type") == "start_game":
+                await self.start_game()
+    
+
+    async def start_game(self):
+        host = await redis_client.hget(f"room:{self.room_code}:owner")
+        if host and host.decode() == self.user.username:
+            await redis_client.hset(f"room:{self.room_code}", mapping={"status": "playing"})
+
+
+
+
+
 
     async def users_list(self, event):
         """

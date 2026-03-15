@@ -5,6 +5,10 @@ from django.conf import settings
 from urllib.parse import parse_qs
 
 class JWTAuthMiddleware(BaseMiddleware):
+    """
+    Middleware for authenticating WebSocket connections using JWT tokens.
+    If the token is missing or invalid, connection is closed.
+    """
     async def __call__(self, scope, receive, send):
         query_string = parse_qs(scope["query_string"].decode())
         token = query_string.get("token")
