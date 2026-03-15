@@ -1,8 +1,13 @@
 import React, { useState } from "react";
+import {useNavigate} from "react-router-dom";
+
 
 export default function PinPage() {
   const [code, setCode] = useState("0000");
-
+  const navigate = useNavigate();
+  const join_room = async () =>{
+    navigate(`/LobbyRoom/${code}`);
+  }
   return (
     
       <div className="absolute top-[30vh] left-1/2 -translate-x-1/2 flex flex-col items-center justify-center text-white text-xl p-1 gap-10 w-full max-w-md">
@@ -13,7 +18,7 @@ export default function PinPage() {
             placeholder="0000"
             onChange={(e) => setCode(e.target.value)} 
           />
-          <button className="bg-white text-black px-6 rounded-xl">
+          <button className="bg-white text-black px-6 rounded-xl" onClick={join_room}>
             Send
           </button>
         </div>

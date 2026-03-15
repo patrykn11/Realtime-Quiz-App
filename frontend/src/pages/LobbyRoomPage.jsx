@@ -1,28 +1,46 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext, useRef } from "react";
 import { AuthContext } from "../components/loginContext";
-import { useParams } from "react-router-dom";
-
+import { useParams} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { API_URL } from "../config";
 export default function RoomPage() {
   const { room_code } = useParams();
   const { token } = useContext(AuthContext);
   const [users, setUsers] = useState([]);
+  const navigate = useNavigate();
 
-    useEffect(() => {
+  useEffect(() => {
+    // Ta zmienna należy TYLKO do tej konkretnej instancji useEffect
+    let isEffectActive = true; 
+
     const socket = new WebSocket(`ws://localhost:8000/ws/room/${room_code}/?token=${token}`);
 
     socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        if (data.type === "users_list") {
+      const data = JSON.parse(event.data);
+      if (data.type === "users_list" && isEffectActive) {
         setUsers(data.users);
-        }
+      }
     };
 
     socket.onopen = () => console.log("Connected to room", room_code);
 
-    socket.onclose = () => console.log("Disconnected");
+    socket.onclose = (event) => {
+      console.log("Disconnected, code:", event.code);
+      
+      const errorCodes = [4401, 4404, 1006];
+      // Sprawdzamy, czy ten konkretny efekt jest nadal aktywny
+      if (isEffectActive && errorCodes.includes(event.code)) {
+        console.log("Krytyczny błąd, przekierowuję...");
+        navigate("/PinPage");
+      }
+    };
 
-    return () => socket.close();
-    }, [room_code, token]);
+    return () => {
+      // To zabije tylko logikę TEGO konkretnego efektu
+      isEffectActive = false; 
+      socket.close();
+    };
+  }, [room_code, token, navigate]);
 
   return (
     <div>
