@@ -45,16 +45,26 @@ class RoomConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         """
         Called when a WebSocket connection is closed.
-        Sends the updated users list to the room.
+        Sends the updated users list or deletes the room if empty.
         """
-        await self.channel_layer.group_discard(self.group_name, self.channel_name)
+
+        if hasattr(self, "group_name"):
+            await self.channel_layer.group_discard(self.group_name, self.channel_name)
+
         login = self.user.username
         await redis_client.srem(f"room:{self.room_code}:users", login)
+
         users = await redis_client.smembers(f"room:{self.room_code}:users")
-        await self.channel_layer.group_send(
-            self.group_name,
-            {"type": "users_list", "users": [u.decode() for u in users]}
-        )
+
+        if len(users) == 0:
+            await redis_client.delete(f"room:{self.room_code}")
+            await redis_client.delete(f"room:{self.room_code}:users")
+        else:
+            if hasattr(self, "group_name"):
+                await self.channel_layer.group_send(
+                    self.group_name,
+                    {"type": "users_list", "users": [u.decode() for u in users]}
+                )
 
     async def users_list(self, event):
         """

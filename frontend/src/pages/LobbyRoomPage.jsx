@@ -10,7 +10,6 @@ export default function RoomPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Ta zmienna należy TYLKO do tej konkretnej instancji useEffect
     let isEffectActive = true; 
 
     const socket = new WebSocket(`ws://localhost:8000/ws/room/${room_code}/?token=${token}`);
@@ -28,15 +27,13 @@ export default function RoomPage() {
       console.log("Disconnected, code:", event.code);
       
       const errorCodes = [4401, 4404, 1006];
-      // Sprawdzamy, czy ten konkretny efekt jest nadal aktywny
       if (isEffectActive && errorCodes.includes(event.code)) {
-        console.log("Krytyczny błąd, przekierowuję...");
+
         navigate("/PinPage");
       }
     };
 
     return () => {
-      // To zabije tylko logikę TEGO konkretnego efektu
       isEffectActive = false; 
       socket.close();
     };
