@@ -2,6 +2,7 @@ import { useEffect, useState, useContext, useRef } from "react";
 import { AuthContext } from "../components/loginContext";
 import { useParams} from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import UserBlock from "../components/userBlock";
 import { API_URL } from "../config";
 export default function RoomPage() {
   const { room_code } = useParams();
@@ -39,11 +40,19 @@ export default function RoomPage() {
     };
   }, [room_code, token, navigate]);
 
-  return (
-    <div>
-      <h1>Lobby Room: {room_code}</h1>
-      <h2>Users in room:</h2>
-      <ul>{users.map(u => <li key={u}>{u}</li>)}</ul>
+return (
+    <div className="min-h-screen w-full flex flex-col items-center py-10">
+      <div className="w-full max-w-3xl px-6">
+        <h1 className="text-3xl font-bold text-white mb-6 ml-2">Lobby : {room_code}</h1>
+        <div className="bg-gray-300 backdrop-blur-sm rounded-3xl p-6 shadow-2xl flex flex-col gap-4">
+          {(
+            users.map((user, index) => (
+              <UserBlock key={index} name={user} />
+            ))
+          )}
+        </div>
+      </div>
     </div>
   );
+
 }
