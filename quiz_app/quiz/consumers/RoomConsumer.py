@@ -30,6 +30,10 @@ class RoomConsumer(AsyncWebsocketConsumer):
             await self.close(code=4404)
             return
         
+        curr_status = await redis_client.hget(f"room:{self.room_code}", "status")
+        if not curr_status or curr_status.decode() == "playing":
+            await self.close(code=4404)
+            return
         self.group_name = f"room_{self.room_code}"
         await self.channel_layer.group_add(self.group_name, self.channel_name)
         await self.accept()
