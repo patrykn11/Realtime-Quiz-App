@@ -1,5 +1,5 @@
 from django.db import models
-
+from .Quiz import Quiz
 class QuizHistorySaver(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -8,7 +8,7 @@ class QuizHistorySaver(models.Model):
     )
 
     quiz = models.ForeignKey(
-        "Quiz",
+        Quiz,
         on_delete=models.CASCADE,
         related_name="quiz_histories_quiz"
     )
