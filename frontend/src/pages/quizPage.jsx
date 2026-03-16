@@ -6,17 +6,17 @@ import UserBlock from "../components/userBlock";
 
 export default function QuizPage(){
   const { room_code } = useParams();
-  const {question, setQuestion} = useState("");
-  const {answers, setAnswers} = useState("");
+  const [question, setQuestion] = useState("");
+  const [answers, setAnswers] = useState("");
   const { token } = useContext(AuthContext);
   const navigate = useNavigate();
   useEffect(()=>{
     let isEffectActive = true; 
 
-    const socket = new WebSocket(`ws://localhost:8000/ws/room/${room_code}/?token=${token}`);
+    const socket = new WebSocket(`ws://localhost:8000/ws/game/${room_code}/?token=${token}`);
 
     socket.onmessage = (event) =>{
-        data = JSON.parse(event.data)
+        const data = JSON.parse(event.data)
         if (data.type === "question" && isEffectActive) {
             setQuestion(data.question);
             setAnswers(data.answers);
@@ -35,5 +35,5 @@ export default function QuizPage(){
       socket.close();
     };
 
-  })
+  }, [room_code, token, navigate])
 }

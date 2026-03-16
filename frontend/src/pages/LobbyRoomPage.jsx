@@ -11,7 +11,8 @@ export default function RoomPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    let isEffectActive = true; 
+    let isEffectActive = true;
+
 
     const socket = new WebSocket(`ws://localhost:8000/ws/room/${room_code}/?token=${token}`);
 
@@ -50,6 +51,7 @@ return (
               <UserBlock key={index} name={user} />
             ))
           )}
+          <button>GRAJ</button>
         </div>
       </div>
     </div>
