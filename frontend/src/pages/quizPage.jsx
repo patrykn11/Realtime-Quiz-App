@@ -36,4 +36,8 @@ export default function QuizPage(){
     };
 
   }, [room_code, token, navigate])
+
+  return (
+    <div>{question}</div>
+  )
 }

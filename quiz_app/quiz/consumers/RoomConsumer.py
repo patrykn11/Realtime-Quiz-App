@@ -2,6 +2,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 import json
 import redis.asyncio as redis
 from django.conf import settings
+import asyncio
 
 REDIS_URL = f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}"
 redis_client = redis.from_url(REDIS_URL)
@@ -18,9 +19,9 @@ class RoomConsumer(AsyncWebsocketConsumer):
         Adds user to Redis set for the room.
         Joins the user to the channel group and sends the current users list.
         """
+        
         self.room_code = self.scope["url_route"]["kwargs"]["room_code"]
         self.user = self.scope["user"]
-
         if not self.user.is_authenticated:
             await self.close(code=4401)
             return
@@ -81,10 +82,24 @@ class RoomConsumer(AsyncWebsocketConsumer):
     
 
     async def start_game(self):
-        host = await redis_client.hget(f"room:{self.room_code}:owner")
+        print("START GAME button pressed by:", self.user.username)
+        host = await redis_client.hget(f"room:{self.room_code}", "owner")
         if host and host.decode() == self.user.username:
-            await redis_client.hset(f"room:{self.room_code}", mapping={"status": "playing"})
-
+            await redis_client.hset(f"room:{self.room_code}", "status", "playing")
+            await self.channel_layer.group_send(
+                self.group_name,
+                {
+                "type": "game_started"
+                }
+            )
+            # await asyncio.sleep(5)
+            # await self.channel_layer.group_send(
+            #     f"game_{self.room_code}",
+            #     {
+            #         "type": "start_quiz",
+            #         "room_code": self.room_code
+            #     }
+            # )
 
 
 
@@ -95,3 +110,10 @@ class RoomConsumer(AsyncWebsocketConsumer):
         Handler for broadcasting the users list to all clients in the room.
         """
         await self.send(text_data=json.dumps({"type": "users_list", "users": event["users"]}))
+    async def game_started(self, event):
+        """
+        Handler for quiz start notification
+        """
+        await self.send(text_data=json.dumps({
+        "type": "game_started"
+        }))
