@@ -1,6 +1,6 @@
 
 import { useContext, useState, useEffect } from "react";
-import { AuthContext } from "../components/loginContext";
+import { AuthContext } from "../components/LoginContext";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
 export default function CreateRoomPage() {

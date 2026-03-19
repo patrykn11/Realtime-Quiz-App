@@ -1,7 +1,7 @@
 from django.db import models
 from django.conf import settings 
 from .Quiz import Quiz
-class QuizHistorySaver(models.Model):
+class QuizHistory(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,

@@ -5,11 +5,11 @@ import './App.css'
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import PinPage from './pages/pinPage'
 import MainLayout from './Layout/MainLayout';
-import LoginPage from './pages/loginPage';
-import { AuthProvider } from './components/loginContext';
-import CreateRoomPage from './pages/createRoomPage';
+import LoginPage from './pages/LoginPage';
+import { AuthProvider } from './components/LoginContext';
+import CreateRoomPage from './pages/CreateRoomPage';
 import LobbyRoomPage from './pages/LobbyRoomPage'
-import QuizPage from './pages/quizPage'
+import QuizPage from './pages/QuizPage'
 function App() {
   const [count, setCount] = useState(0)
 

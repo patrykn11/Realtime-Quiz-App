@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../components/loginContext";
+import { AuthContext } from "./LoginContext";
 
 const Sidebar = () => {
   const items = [

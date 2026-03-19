@@ -1,119 +1,62 @@
-from channels.generic.websocket import AsyncWebsocketConsumer
 import json
-import redis.asyncio as redis
-from django.conf import settings
-import asyncio
+from channels.generic.websocket import AsyncWebsocketConsumer
+from ..services.RoomService import RoomService
 
-REDIS_URL = f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}"
-redis_client = redis.from_url(REDIS_URL)
 
 class RoomConsumer(AsyncWebsocketConsumer):
     """
-    WebSocket consumer for quiz rooms.
-    Manages user connections, user lists, and broadcasts updates to the room.
+    WebSocket consumer for managing a room.
+    Handles joining, leaving, and broadcasting user list.
     """
 
     async def connect(self):
-        """
-        Called when a WebSocket connection is opened.
-        Adds user to Redis set for the room.
-        Joins the user to the channel group and sends the current users list.
-        """
-        
+        """Handle new WebSocket connection and attempt to join room."""
         self.room_code = self.scope["url_route"]["kwargs"]["room_code"]
         self.user = self.scope["user"]
+        self.group_name = f"room_{self.room_code}"
+
         if not self.user.is_authenticated:
             await self.close(code=4401)
             return
 
-        room_exists = await redis_client.exists(f"room:{self.room_code}")
-        if not room_exists:
+        joined = await RoomService.join_room(self.room_code, self.user.username)
+        if not joined:
             await self.close(code=4404)
             return
-        
-        curr_status = await redis_client.hget(f"room:{self.room_code}", "status")
-        if not curr_status or curr_status.decode() == "playing":
-            await self.close(code=4404)
-            return
-        self.group_name = f"room_{self.room_code}"
+
         await self.channel_layer.group_add(self.group_name, self.channel_name)
         await self.accept()
-
-        login = self.user.username
-        await redis_client.sadd(f"room:{self.room_code}:users", login)
-        users = await redis_client.smembers(f"room:{self.room_code}:users")
-        await self.channel_layer.group_send(
-            self.group_name,
-            {"type": "users_list", "users": [u.decode() for u in users]}
-        )
+        await self.broadcast_user_list()
 
     async def disconnect(self, close_code):
-        """
-        Called when a WebSocket connection is closed.
-        Sends the updated users list or deletes the room if empty.
-        """
-
+        """Handle WebSocket disconnection and leave room."""
         if hasattr(self, "group_name"):
             await self.channel_layer.group_discard(self.group_name, self.channel_name)
-
-        login = self.user.username
-        curr_status = await redis_client.hget(f"room:{self.room_code}", "status")
-
-        if not curr_status or curr_status.decode() != "playing":
-            await redis_client.srem(f"room:{self.room_code}:users", login)
-
-        users = await redis_client.smembers(f"room:{self.room_code}:users")
-
-        if len(users) == 0:
-            await redis_client.delete(f"room:{self.room_code}")
-            await redis_client.delete(f"room:{self.room_code}:users")
-        else:
-            if hasattr(self, "group_name"):
-                await self.channel_layer.group_send(
-                    self.group_name,
-                    {"type": "users_list", "users": [u.decode() for u in users]}
-                )
+            room_still_exists = await RoomService.leave_room(self.room_code, self.user.username)
+            if room_still_exists:
+                await self.broadcast_user_list()
 
     async def receive(self, text_data):
-        if text_data:
-            data = json.loads(text_data)
-            if data.get("type") == "start_game":
-                await self.start_game()
-    
+        """Handle incoming WebSocket messages."""
+        data = json.loads(text_data)
+        if data.get("type") == "start_game":
+            if await RoomService.try_start_game(self.room_code, self.user.username):
+                await self.channel_layer.group_send(
+                    self.group_name, {"type": "game_started"}
+                )
 
-    async def start_game(self):
-        print("START GAME button pressed by:", self.user.username)
-        host = await redis_client.hget(f"room:{self.room_code}", "owner")
-        if host and host.decode() == self.user.username:
-            await redis_client.hset(f"room:{self.room_code}", "status", "playing")
-            await self.channel_layer.group_send(
-                self.group_name,
-                {
-                "type": "game_started"
-                }
-            )
-            # await asyncio.sleep(5)
-            # await self.channel_layer.group_send(
-            #     f"game_{self.room_code}",
-            #     {
-            #         "type": "start_quiz",
-            #         "room_code": self.room_code
-            #     }
-            # )
-
-
-
-
+    async def broadcast_user_list(self):
+        """Broadcast the current list of users in the room."""
+        users = await RoomService.get_users(self.room_code)
+        await self.channel_layer.group_send(
+            self.group_name,
+            {"type": "users_list", "users": users}
+        )
 
     async def users_list(self, event):
-        """
-        Handler for broadcasting the users list to all clients in the room.
-        """
-        await self.send(text_data=json.dumps({"type": "users_list", "users": event["users"]}))
+        """Send updated user list to WebSocket client."""
+        await self.send(text_data=json.dumps(event))
+
     async def game_started(self, event):
-        """
-        Handler for quiz start notification
-        """
-        await self.send(text_data=json.dumps({
-        "type": "game_started"
-        }))
+        """Notify clients that the game has started."""
+        await self.send(text_data=json.dumps(event))

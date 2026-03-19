@@ -1,6 +1,6 @@
 
 import { useContext, useState } from "react";
-import { AuthContext } from "../components/loginContext";
+import { AuthContext } from "../components/LoginContext";
 import { API_URL } from "../config";
 export default function LoginPage() {
   const {token, setToken } = useContext(AuthContext);

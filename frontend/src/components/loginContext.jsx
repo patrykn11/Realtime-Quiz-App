@@ -1,6 +1,5 @@
 import { createContext, useState, useEffect } from "react";
 
-// Tworzymy kontekst
 export const AuthContext = createContext({
   token: "",
   setToken: () => {},

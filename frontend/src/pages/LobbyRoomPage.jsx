@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext, useRef } from "react";
-import { AuthContext } from "../components/loginContext";
+import { AuthContext } from "../components/LoginContext";
 import { useParams, useNavigate } from "react-router-dom";
 import UserBlock from "../components/userBlock";
 
