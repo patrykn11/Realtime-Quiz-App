@@ -2,6 +2,7 @@ from django.test import TestCase
 from quiz.models import Quiz, Question
 from django.contrib.auth.models import User
 from rest_framework.test import APIClient
+from unittest.mock import AsyncMock, patch, MagicMock
 
 class ApiQuiz(TestCase):
     
@@ -50,5 +51,30 @@ class ApiQuiz(TestCase):
         self.assertEqual(question1.ans2, "4")
         self.assertEqual(question1.correct_ans, 2)
 
-    
+
+    @patch("quiz.views.rooms.redis_client")    
+    def test_create_room(self, mock_redis):
+        mock_redis.exists.return_value = False
+
+        response = self.client.post("/api/create_room/")
+
+        room_code = response.data["room_code"]
+
+        self.assertEqual(response.data["status"], "ok")
+
+        mock_redis.hset.assert_called_once_with(
+
+            f"room:{room_code}",
+
+            mapping={
+
+                "owner": "test",
+                "status": "waiting"
+
+            })
+
+        
+
+
+
 
