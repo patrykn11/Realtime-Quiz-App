@@ -37,7 +37,7 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - DJANGO_SETTINGS_MODULE=core.settings_test
       - PYTHONUNBUFFERED=1
-    command: pytest
+    command: python manage.py test -v 2
     entrypoint: ""
     depends_on:
       db:
