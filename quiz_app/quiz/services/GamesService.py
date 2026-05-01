@@ -2,9 +2,11 @@ import time
 import json
 import redis.asyncio as redis
 from django.conf import settings
-from quiz.models import Quiz, Question
+from quiz.models import Quiz, Question, QuizHistory
 from asgiref.sync import sync_to_async
 from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.auth.models import User
+
 
 REDIS_URL = f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}"
 redis_client = redis.from_url(REDIS_URL, decode_responses=True)
@@ -223,6 +225,25 @@ class GameService:
                 if user_ans == q["correct_ans"]:
                     score += 1
         return score
+    
+    @classmethod
+    async def save_quiz(cls, room_code, quiz_name):
+        usernames = await cls.get_users_in_room(room_code)
+        
+        quiz = await sync_to_async(Quiz.objects.get)(name=quiz_name)
+
+        for username in usernames:
+            score = await cls.get_score(room_code, username, quiz_name)
+            user = await sync_to_async(User.objects.get)(username=username)
+            await sync_to_async(QuizHistory.objects.create)(user=user,quiz=quiz, score=score)
+
+    @classmethod
+    async def get_quiz_name(cls, room_code):
+        room_key, _, _ = cls.get_keys(room_code)
+
+        room_data = await redis_client.hgetall(room_key)
+
+        return room_data.get("quiz_name")
 
     @classmethod
     async def get_users_in_room(cls, room_code):
@@ -237,3 +258,4 @@ class GameService:
         """
         _, users_key, _ = cls.get_keys(room_code)
         return await redis_client.smembers(users_key)
+    

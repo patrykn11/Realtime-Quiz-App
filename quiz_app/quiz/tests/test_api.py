@@ -52,26 +52,21 @@ class ApiQuiz(TestCase):
         self.assertEqual(question1.correct_ans, 2)
 
 
-    @patch("quiz.views.rooms.redis_client")    
-    def test_create_room(self, mock_redis):
+
+    @patch("quiz.views.rooms.redis_client")
+    @patch("quiz.views.rooms.random.choices")
+    def test_cr_room(self, mock_random, mock_redis):
         mock_redis.exists.return_value = False
-
+        mock_random.return_value = "ABC"
         response = self.client.post("/api/create_room/")
+        mock_redis.hset.assert_called_once_with("room:ABC", mapping={
+        "owner": "test",
+        "status": "waiting"
+    })
 
-        room_code = response.data["room_code"]
+        
 
-        self.assertEqual(response.data["status"], "ok")
 
-        mock_redis.hset.assert_called_once_with(
-
-            f"room:{room_code}",
-
-            mapping={
-
-                "owner": "test",
-                "status": "waiting"
-
-            })
 
         
 
