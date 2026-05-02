@@ -24,7 +24,6 @@ def user_stats(request):
             "created_at": quiz_history.quiz_time
 
         })
-        print(quiz_history.quiz.name)
     return Response(data)
     
 

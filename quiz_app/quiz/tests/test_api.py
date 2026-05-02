@@ -54,22 +54,21 @@ class ApiQuiz(TestCase):
 
 
 # Zamiast @patch("quiz.views.room_views.Quiz.objects.filter.exists")
-    @patch("quiz.views.room_views.Quiz.objects.filter")
+
     @patch("quiz.views.room_views.redis_client")
     @patch("quiz.views.room_views.random.choices")
-    def test_cr_room(self, mock_random, mock_redis, mock_filter):
-        mock_filter.return_value.exists.return_value = True
+    def test_cr_room(self, mock_random, mock_redis):
         
         mock_redis.exists.return_value = False
         mock_random.return_value = "ABC"
         
-        data = {"quiz_name": "test"}
+        data = {"quiz_name": "sample_quiz"}
     
         response = self.client.post("/api/create_room/", data, format="json")
         mock_redis.hset.assert_called_once_with("room:ABC", mapping={
         "owner": "test",
         "status": "waiting",
-        "quiz_name": "test"
+        "quiz_name": "sample_quiz"
     })
 
         
