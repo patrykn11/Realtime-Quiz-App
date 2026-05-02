@@ -17,5 +17,7 @@ class QuizHistory(models.Model):
 
     score = models.IntegerField(null=True)
 
+    quiz_time = models.DateField(auto_now_add=True)
+
     def __str__(self):
         return f"{self.user} - {self.quiz} - {self.score}"

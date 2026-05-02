@@ -6,12 +6,6 @@ from quiz.models import Quiz, Question
 
 @api_view(["GET"])
 def quizes_name_list(request):
-    """
-    Retrieve a list of all available quiz names.
-
-    Returns:
-        Response: A list of strings containing the names of all quizzes.
-    """
     quiz_names = list(Quiz.objects.values_list("name", flat=True))
     return Response(quiz_names)
 

@@ -6,7 +6,7 @@ const Sidebar = () => {
   const items = [
     { name: "Home", path: "/pinPage" },
     { name: "Create room", path: "/createRoom" },
-    { name: "Join Room", path: "/pinPage" }
+    { name: "Join Room", path: "/pinPage" },
   ];
 
   const { token, setToken } = useContext(AuthContext);
@@ -17,6 +17,9 @@ const Sidebar = () => {
     navigate("/loginPage");
   };
 
+  const profile = () => {
+    navigate("/Profile")
+  }
   return (
     <div className="w-64 h-screen bg-linear-to-r from-[#693620] to-[#9e3636] text-white flex flex-col p-4 shadow-xl">
 
@@ -32,10 +35,14 @@ const Sidebar = () => {
         ))}
 
          <div className="flex flex-col gap-10">
-          {token ? (
+          {token ? (<>
             <button onClick={logout} className="hover:bg-black font-mono">
               Logout
             </button>
+            <button onClick={profile} className="hover:bg-black font-mono">
+              Profile
+            </button>
+            </>
           ) : (
             <button  onClick={() => navigate("/loginPage")} className="hover:bg-black font-mono">
               Sign in

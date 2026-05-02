@@ -10,6 +10,8 @@ import { AuthProvider } from './components/LoginContext';
 import CreateRoomPage from './pages/CreateRoomPage';
 import LobbyRoomPage from './pages/LobbyRoomPage'
 import QuizPage from './pages/QuizPage'
+import ProfilePage from './pages/Profilepage';
+
 function App() {
   const [count, setCount] = useState(0)
 
@@ -23,6 +25,8 @@ function App() {
         <Route path='createRoom' element={<CreateRoomPage/>}/>
         <Route path='LobbyRoom/:room_code' element={<LobbyRoomPage/>}/>
         <Route path='QuizPage/:room_code' element={<QuizPage/>}/>
+        <Route path='Profile' element={<ProfilePage/>}/>
+
       </Route>
     </Routes>
     </AuthProvider>

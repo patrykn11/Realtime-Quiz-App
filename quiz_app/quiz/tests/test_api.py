@@ -41,7 +41,7 @@ class ApiQuiz(TestCase):
 
         
         response = self.client.post("/api/create_quiz/", payload, format="json")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         quiz = Quiz.objects.get(name="sample3_quiz")
         self.assertIsNotNone(quiz)
         questions = Question.objects.filter(quiz=quiz)
@@ -53,15 +53,23 @@ class ApiQuiz(TestCase):
 
 
 
-    @patch("quiz.views.rooms.redis_client")
-    @patch("quiz.views.rooms.random.choices")
-    def test_cr_room(self, mock_random, mock_redis):
+# Zamiast @patch("quiz.views.room_views.Quiz.objects.filter.exists")
+    @patch("quiz.views.room_views.Quiz.objects.filter")
+    @patch("quiz.views.room_views.redis_client")
+    @patch("quiz.views.room_views.random.choices")
+    def test_cr_room(self, mock_random, mock_redis, mock_filter):
+        mock_filter.return_value.exists.return_value = True
+        
         mock_redis.exists.return_value = False
         mock_random.return_value = "ABC"
-        response = self.client.post("/api/create_room/")
+        
+        data = {"quiz_name": "test"}
+    
+        response = self.client.post("/api/create_room/", data, format="json")
         mock_redis.hset.assert_called_once_with("room:ABC", mapping={
         "owner": "test",
-        "status": "waiting"
+        "status": "waiting",
+        "quiz_name": "test"
     })
 
         
