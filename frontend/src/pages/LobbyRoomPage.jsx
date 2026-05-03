@@ -61,7 +61,7 @@ export default function RoomPage() {
     <div className="min-h-screen w-full flex flex-col items-center py-10">
       <div className="w-full max-w-3xl px-6">
         <h1 className="text-3xl font-bold text-white mb-6 ml-2">Lobby : {room_code}</h1>
-        <div className="bg-gray-300 backdrop-blur-sm rounded-3xl p-6 shadow-2xl flex flex-col gap-4">
+        <div className="bg-gray-300 rounded-3xl p-6 shadow-2xl flex flex-col gap-4">
           {users.map((user, index) => (
             <UserBlock key={index} name={user} />
           ))}

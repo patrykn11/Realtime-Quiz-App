@@ -55,17 +55,7 @@ return (
       {quizes.map((quiz_name, id) => (
         <button
           key={id}
-          className="
-            px-6 py-3
-            text-white
-            rounded-2xl
-            shadow-md
-            hover:bg-red-700
-            hover:shadow-lg
-            active:scale-95
-            transition-all duration-200
-            font-semibold
-          "
+          className=" px-6 py-3 text-white rounded-2xl shadow-md hover:bg-red-700 hover:shadow-lg "
           onClick={() => setChosenQuiz(quiz_name)}
         >
           {quiz_name}
@@ -74,21 +64,7 @@ return (
     </div>
 
     <button
-      className="
-        rounded-2xl
-        bg-orange-700
-        text-white
-        px-8
-        py-4
-        font-mono
-        text-lg
-        shadow-lg
-        hover:bg-orange-600
-        active:bg-orange-800
-        active:scale-95
-        transition-all
-        duration-150
-      "
+      className=" rounded-2xl bg-orange-700 text-white px-8 py-4 font-mono text-lg shadow-lg hover:bg-orange-600 "
       onClick={() => create_room()}
     >
       Create '{ChosenQuiz}' Quiz Room {response}

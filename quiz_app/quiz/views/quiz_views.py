@@ -2,64 +2,32 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from quiz.models import Quiz, Question
+from quiz.models import Quiz, Question, Choice
 
 @api_view(["GET"])
 def quizes_name_list(request):
     quiz_names = list(Quiz.objects.values_list("name", flat=True))
     return Response(quiz_names)
 
-@api_view(["POST"])
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_quiz(request):
-    """
-    Create a new quiz instance along with its associated questions.
+    data = request.data
+    quiz = Quiz.objects.create(name=data.get('name'))
+    questions_data = data.get('questions', [])
 
-    Expected JSON structure:
-    {
-        "name": "Quiz Title",
-        "questions": [
-            {
-                "text": "Question content?",
-                "ans1": "Option A",
-                "ans2": "Option B",
-                "correct_ans": 0
-            }
-        ]
-    }
-
-    Args:
-        request: The HTTP request object containing quiz and question data.
-
-    Returns:
-        Response: A success message with the created quiz ID or an error message.
-    """
-    quiz_name = request.data.get("name")
-    questions = request.data.get("questions")
-
-    if not quiz_name or not questions:
-        return Response(
-            {"error": "Both 'name' and 'questions' fields are required."}, 
-            status=status.HTTP_400_BAD_REQUEST
+    for q_item in questions_data:
+        question = Question.objects.create(
+            quiz=quiz,
+            text=q_item.get('text')
         )
+        
+        choices_data = q_item.get('choices', [])
+        for c_item in choices_data:
+            Choice.objects.create(
+                question=question,
+                text=c_item.get('text'),
+                is_correct=c_item.get('is_correct', False)
+            )
 
-    new_quiz = Quiz.objects.create(name=quiz_name)
-
-    for q in questions:
-        text = q.get("text")
-        ans1 = q.get("ans1")
-        ans2 = q.get("ans2")
-        correct_ans = q.get("correct_ans", 0)
-
-        Question.objects.create(
-            text=text,
-            ans1=ans1,
-            ans2=ans2,
-            correct_ans=correct_ans,
-            quiz=new_quiz
-        )
-
-    return Response(
-        {"status": "created", "quiz_id": new_quiz.id}, 
-        status=status.HTTP_201_CREATED
-    )
+    return Response({"message": "Quiz created"}, status=status.HTTP_201_CREATED)

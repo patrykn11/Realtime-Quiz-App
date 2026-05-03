@@ -34,7 +34,6 @@ export default function QuizPage() {
         setTimeLeft(initialTime);
 
         if (timerRef.current) clearInterval(timerRef.current);
-
         timerRef.current = setInterval(() => {
           setTimeLeft((prev) => {
             if (prev <= 1) {
@@ -59,9 +58,7 @@ export default function QuizPage() {
       }
     };
 
-    socket.onclose = () => {
-      if (isEffectActive) navigate("/PinPage");
-    };
+    socket.onclose = () => { if (isEffectActive) navigate("/PinPage"); };
 
     return () => {
       isEffectActive = false;
@@ -93,39 +90,21 @@ export default function QuizPage() {
         />
       ) : isFinished || scores.length > 0 || myScore !== null ? (
         <div className="bg-white w-full max-w-6xl rounded-xl p-8 md:p-12 shadow-2xl text-black flex flex-col items-center">
-          
           <h2 className="text-4xl md:text-6xl font-black text-center mb-8 ">
-            Your score: <span >{myScore ?? 0} points</span>
+            Your score: <span>{myScore ?? 0} points</span>
           </h2>
-          
           <div className="h-px w-full bg-gray-200 my-8" />
-
-          <h2 className="text-2xl md:text-3xl font-bold mb-8 text-gray-400 text-center">
-            Podium
-          </h2>
-
+          <h2 className="text-2xl md:text-3xl font-bold mb-8 text-gray-400 text-center">Podium</h2>
           <div className="w-full max-w-2xl space-y-2">
-            {scores
-              .sort((a, b) => b.score - a.score)
-              .map((s, idx) => (
-                <div 
-                  key={idx} 
-                  className="flex justify-between items-center py-4 px-6 border-b border-gray-100"
-                >
-                  <span className="text-2xl font-bold text-gray-800">
-                    {idx + 1}. {s.username}
-                  </span>
-                  <span className="text-2xl font-black">
-                    {s.score} points
-                  </span>
-                </div>
-              ))}
+            {scores.sort((a, b) => b.score - a.score).map((s, idx) => (
+              <div key={idx} className="flex justify-between items-center py-4 px-6 border-b border-gray-100">
+                <span className="text-2xl font-bold text-gray-800">{idx + 1}. {s.username}</span>
+                <span className="text-2xl font-black">{s.score} points</span>
+              </div>
+            ))}
           </div>
-
         </div>
-      ) : (
-        <p className="text-white animate-pulse">Reconnect</p>
-      )}
+      ) : <></>}
     </div>
   );
 }
