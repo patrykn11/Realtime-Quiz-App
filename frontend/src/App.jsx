@@ -3,7 +3,7 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import PinPage from './pages/pinPage'
+import PinPage from './pages/PinPage'
 import MainLayout from './Layout/MainLayout';
 import LoginPage from './pages/LoginPage';
 import { AuthProvider } from './components/LoginContext';

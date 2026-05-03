@@ -96,10 +96,8 @@ class GameService:
             qs = Question.objects.filter(quiz=quiz).order_by("id")
             result = []
             for q in qs:
-                # Pobieramy wszystkie odpowiedzi dla pytania
                 choices = list(q.choices.all())
                 choice_texts = [c.text for c in choices]
-                # Szukamy indeksu poprawnej odpowiedzi
                 correct_idx = 0
                 for i, c in enumerate(choices):
                     if c.is_correct:

@@ -11,7 +11,7 @@ def seed_data():
     
     data = [
         {
-            "text": "What color is the sky on a clear day?",
+            "text": "What color is the sky?",
             "choices": [
                 {"text": "Blue", "is_correct": True},
                 {"text": "Green", "is_correct": False},

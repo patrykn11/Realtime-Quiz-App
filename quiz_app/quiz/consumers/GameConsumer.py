@@ -6,6 +6,7 @@ from ..services.GamesService import GameService
 
 class GameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
+        """Handles initial WebSocket connection, room validation, and group joining."""
         self.room_code = self.scope["url_route"]["kwargs"]["room_code"]
         self.user = self.scope["user"]
         self.group_name = f"game_{self.room_code}"
@@ -35,7 +36,9 @@ class GameConsumer(AsyncWebsocketConsumer):
             await self.send_final_score()
 
     async def handle_reconnect(self, room_data):
+        """Synchronizes a reconnecting user with the current active question."""
         q = await GameService.get_current_question(self.room_code)
+        
         if q:
             elapsed = time.time() - float(q["start_time"])
             remaining = GameService.QUESTION_TIME - elapsed
@@ -43,16 +46,21 @@ class GameConsumer(AsyncWebsocketConsumer):
                 await self.send_question_packet(q["text"], q["answers"], round(remaining, 1))
 
     async def disconnect(self, close_code):
+        """Removes the user from the channel group on disconnection."""
         if hasattr(self, "group_name"):
             await self.channel_layer.group_discard(self.group_name, self.channel_name)
 
     async def receive(self, text_data):
+        """Processes incoming messages from the client, such as submitted answers."""
         data = json.loads(text_data)
+
         if data.get("type") == "answer":
             await GameService.save_answer(self.room_code, self.user.username, data.get("answer"))
 
     async def start_quiz_loop(self):
+        """Manages the main quiz lifecycle, iterating through questions and saving results."""
         questions = await GameService.get_questions_by_quiz_name(self.quiz_name)
+
         for idx, question in enumerate(questions):
             await GameService.set_current_question(self.room_code, idx, question)
             await self.channel_layer.group_send(self.group_name, {
@@ -65,27 +73,38 @@ class GameConsumer(AsyncWebsocketConsumer):
 
         await GameService.set_game_finished(self.room_code)
         await GameService.save_quiz(self.room_code, self.quiz_name)
+
         await self.send_scores_to_all()
         await self.channel_layer.group_send(self.group_name, {"type": "game_over_trigger"})
 
     async def send_scores_to_all(self):
+        """Gathers scores for all users and triggers the final results broadcast."""
         users = await GameService.get_users_in_room(self.room_code)
         ranking = []
         for username in users:
             score = await GameService.get_score(self.room_code, username, self.quiz_name)
             ranking.append({"username": username, "score": score})
+
+
         await self.channel_layer.group_send(self.group_name, {"type": "broadcast_final_results", "ranking": ranking})
 
     async def broadcast_final_results(self, event):
+        """Sends the final ranking and the individual's score to the client."""
         ranking = event["ranking"]
+
+
         own_score = 0
+
+        
         for entry in ranking:
             if entry["username"] == self.user.username:
                 own_score = entry["score"]
                 break
+
         await self.send(text_data=json.dumps({"type": "final_results", "ranking": ranking, "own_score": own_score}))
 
     async def send_final_score(self):
+        """Sends the final leaderboard directly to a reconnecting user."""
         users = await GameService.get_users_in_room(self.room_code)
         ranking = []
         own_score = 0
@@ -94,13 +113,26 @@ class GameConsumer(AsyncWebsocketConsumer):
             ranking.append({"username": username, "score": score})
             if username == self.user.username:
                 own_score = score
+
+
         await self.send(text_data=json.dumps({"type": "final_results", "own_score": own_score, "ranking": ranking}))
 
     async def broadcast_question(self, event):
+        """Channel layer handler that broadcasts a question to individual clients."""
         await self.send_question_packet(event["question"], event["answers"], event["time_limit"])
 
+
     async def send_question_packet(self, text, answers, time_limit):
-        await self.send(text_data=json.dumps({"type": "question", "question": text, "answers": answers, "time_limit": time_limit}))
+        """Sends a formatted question packet through the WebSocket."""
+
+        await self.send(text_data=json.dumps({
+            "type": "question",
+            "question": text,
+            "answers": answers,
+            "time_limit": time_limit
+        }))
+
 
     async def game_over_trigger(self, event):
+        """Sends a game over signal to the client."""
         await self.send(text_data=json.dumps({"type": "game_over"}))
