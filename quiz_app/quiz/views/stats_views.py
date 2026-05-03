@@ -16,14 +16,10 @@ def user_stats(request):
     for quiz_history in all_user_quizes:
 
         data.append({
-
             "quiz_name": quiz_history.quiz.name,
-
             "score": quiz_history.score,
 
-            "created_at": quiz_history.quiz_time
-
-        })
+            "created_at": quiz_history.quiz_time})
     return Response(data)
     
 
