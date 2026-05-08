@@ -1,7 +1,7 @@
 import { useEffect, useState, useContext, useRef } from "react";
 import { AuthContext } from "../components/LoginContext";
 import { useParams, useNavigate } from "react-router-dom";
-import UserBlock from "../components/userBlock";
+import UserBlock from "../components/UserBlock";
 
 export default function RoomPage() {
   const { room_code } = useParams();

@@ -1,38 +1,6 @@
 from django.test import TestCase
 from quiz.models import Quiz, Question, Choice
 
-class QuizModelTest(TestCase):
-
-    def setUp(self):
-        self.quiz = Quiz.objects.create(name="General Knowledge")
-
-    def test_quiz_creation(self):
-        self.assertEqual(self.quiz.name, "General Knowledge")
-        self.assertIsNotNone(self.quiz.created_at)
-
-    def test_quiz_str(self):
-        self.assertEqual(str(self.quiz), "General Knowledge")
-
-class QuestionModelTest(TestCase):
-
-    def setUp(self):
-        self.quiz = Quiz.objects.create(name="Science Quiz")
-        self.question = Question.objects.create(
-            text="testq",
-            quiz=self.quiz
-        )
-
-    def test_question_fields(self):
-        self.assertEqual(self.question.text, "testq")
-        self.assertEqual(self.question.quiz, self.quiz)
-
-    def test_question_relationship(self):
-        self.assertEqual(self.quiz.questions.count(), 1)
-        self.assertEqual(self.quiz.questions.first(), self.question)
-
-    def test_question_str(self):
-        self.assertEqual(str(self.question), "testq")
-
 class ChoiceModelTest(TestCase):
 
     def setUp(self):

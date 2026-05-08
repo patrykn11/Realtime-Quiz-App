@@ -37,6 +37,7 @@ class GameConsumer(AsyncWebsocketConsumer):
 
     async def handle_reconnect(self, room_data):
         """Synchronizes a reconnecting user with the current active question."""
+        
         q = await GameService.get_current_question(self.room_code)
         
         if q:
@@ -47,6 +48,7 @@ class GameConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, close_code):
         """Removes the user from the channel group on disconnection."""
+
         if hasattr(self, "group_name"):
             await self.channel_layer.group_discard(self.group_name, self.channel_name)
 
@@ -70,6 +72,9 @@ class GameConsumer(AsyncWebsocketConsumer):
                 "time_limit": GameService.QUESTION_TIME
             })
             await asyncio.sleep(GameService.QUESTION_TIME + 2)
+
+            print(f"QUIZ: {self.room_code}, {question}") # it has to be deleted (for debugging)
+
 
         await GameService.set_game_finished(self.room_code)
         await GameService.save_quiz(self.room_code, self.quiz_name)
