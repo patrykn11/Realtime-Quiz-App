@@ -14,6 +14,7 @@ if [ ! -f "quiz_app/manage.py" ]; then\n\
   django-admin startproject core backend\n\
 fi\n\
 cd quiz_app\n\
+python manage.py migrate --noinput\n\
 exec python manage.py runserver 0.0.0.0:8000\n' > /start.sh && chmod +x /start.sh
 
 ENTRYPOINT ["/start.sh"]

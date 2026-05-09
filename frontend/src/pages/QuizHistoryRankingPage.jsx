@@ -4,7 +4,7 @@ import { AuthContext } from "../components/LoginContext";
 import { API_URL } from "../config";
 
 export default function QuizHistoryRankingPage() {
-  const { historyId } = useParams();
+  const { gameId } = useParams();
   const { token } = useContext(AuthContext);
   const navigate = useNavigate();
   const [rankingData, setRankingData] = useState(null);
@@ -14,7 +14,7 @@ export default function QuizHistoryRankingPage() {
       const headers = { Authorization: `Bearer ${token}` };
 
       try {
-        const response = await fetch(`${API_URL}/api/quiz_history/${historyId}/ranking/`, { headers });
+        const response = await fetch(`${API_URL}/api/quiz_history/${gameId}/ranking/`, { headers });
         if (!response.ok) {
           navigate("/Profile");
           return;
@@ -30,7 +30,7 @@ export default function QuizHistoryRankingPage() {
     };
 
     if (token) fetchRanking();
-  }, [historyId, navigate, token]);
+  }, [gameId, navigate, token]);
 
   const scores = rankingData?.ranking ?? [];
 

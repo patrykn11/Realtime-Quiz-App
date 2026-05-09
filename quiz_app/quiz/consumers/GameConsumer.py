@@ -62,6 +62,7 @@ class GameConsumer(AsyncWebsocketConsumer):
     async def start_quiz_loop(self):
         """Manages the main quiz lifecycle, iterating through questions and saving results."""
         questions = await GameService.get_questions_by_quiz_name(self.quiz_name)
+        await GameService.set_correct_answers(self.room_code, questions)
 
         for idx, question in enumerate(questions):
             await GameService.set_current_question(self.room_code, idx, question)
@@ -71,9 +72,15 @@ class GameConsumer(AsyncWebsocketConsumer):
                 "answers": question["answers"],
                 "time_limit": GameService.QUESTION_TIME
             })
-            await asyncio.sleep(GameService.QUESTION_TIME + 2)
+            await asyncio.sleep(GameService.QUESTION_TIME)
 
-            print(f"QUIZ: {self.room_code}, {question}") # it has to be deleted (for debugging)
+            question_results = await GameService.get_question_results(self.room_code, idx)
+            await self.channel_layer.group_send(self.group_name, {
+                "type": "broadcast_question_results",
+                "correct_answer": question_results["correct_answer"],
+                "results": question_results["results"]
+            })
+            await asyncio.sleep(2)
 
 
         await GameService.set_game_finished(self.room_code)
@@ -137,6 +144,13 @@ class GameConsumer(AsyncWebsocketConsumer):
             "time_limit": time_limit
         }))
 
+    async def broadcast_question_results(self, event):
+        """Sends per-question answer results to the client."""
+        await self.send(text_data=json.dumps({
+            "type": "question_results",
+            "correct_answer": event["correct_answer"],
+            "results": event["results"]
+        }))
 
     async def game_over_trigger(self, event):
         """Sends a game over signal to the client."""

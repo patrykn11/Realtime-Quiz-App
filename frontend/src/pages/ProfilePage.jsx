@@ -82,7 +82,7 @@ export default function ProfilePage() {
               stats.map((item, i) => (
                 <tr
                   key={item.id ?? i}
-                  onClick={() => item.id && navigate(`/Profile/history/${item.id}`)}
+                  onClick={() => item.game_id && navigate(`/Profile/history/${item.game_id}`)}
                   className="border-b border-gray-100 even:bg-[#F8F9FA] cursor-pointer hover:bg-[#F4E8EC] transition-colors"
                 >
                   <td className="px-6 py-4 font-medium text-gray-700">{item.quiz_name}</td>

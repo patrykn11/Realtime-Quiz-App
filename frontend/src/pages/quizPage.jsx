@@ -9,6 +9,7 @@ export default function QuizPage() {
   const [answers, setAnswers] = useState([]);
   const [timeLeft, setTimeLeft] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [questionResults, setQuestionResults] = useState(null);
   const [scores, setScores] = useState([]); 
   const [myScore, setMyScore] = useState(null); 
   const [isFinished, setIsFinished] = useState(false);
@@ -28,6 +29,7 @@ export default function QuizPage() {
         setQuestion(data.question);
         setAnswers(data.answers);
         setSelectedAnswer(null);
+        setQuestionResults(null);
         setIsFinished(false);
 
         const initialTime = data.time_limit;
@@ -51,9 +53,19 @@ export default function QuizPage() {
         setIsFinished(true); 
       }
 
+      if (data.type === "question_results" && isEffectActive) {
+        setQuestionResults({
+          correct_answer: data.correct_answer,
+          results: data.results
+        });
+        setTimeLeft(0);
+        if (timerRef.current) clearInterval(timerRef.current);
+      }
+
       if (data.type === "game_over") {
         setIsFinished(true);
         setQuestion(""); 
+        setQuestionResults(null);
         if (timerRef.current) clearInterval(timerRef.current);
       }
     };
@@ -87,6 +99,7 @@ export default function QuizPage() {
           onAnswer={sendAnswer}
           timeLeft={timeLeft}
           selectedAnswer={selectedAnswer}
+          questionResults={questionResults}
         />
       ) : isFinished || scores.length > 0 || myScore !== null ? (
         <div className="bg-white w-full max-w-6xl rounded-xl p-8 md:p-12 shadow-2xl text-black flex flex-col items-center">

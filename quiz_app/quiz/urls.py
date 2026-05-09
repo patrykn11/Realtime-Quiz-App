@@ -12,5 +12,5 @@ urlpatterns = [
     path("create_quiz/", create_quiz, name="create_quiz"),
     path("user_stats/", user_stats, name="user_stats"),
     path("user_stats_per_day/", user_stats_per_day, name="user_stats_per_day"),
-    path("quiz_history/<int:history_id>/ranking/", quiz_history_ranking, name="quiz_history_ranking")
+    path("quiz_history/<uuid:game_id>/ranking/", quiz_history_ranking, name="quiz_history_ranking")
 ]

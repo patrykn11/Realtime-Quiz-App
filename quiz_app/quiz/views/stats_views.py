@@ -41,18 +41,20 @@ def user_stats_per_day(request):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def quiz_history_ranking(request, history_id):
-    try:
-        history = QuizHistory.objects.select_related("quiz").get(
-            id=history_id,
-            user=request.user
-        )
-    except QuizHistory.DoesNotExist:
+def quiz_history_ranking(request, game_id):
+    user_history = (
+        QuizHistory.objects
+        .select_related("quiz")
+        .filter(game_id=game_id, user=request.user)
+        .first()
+    )
+
+    if user_history is None:
         return Response({"detail": "history not found"}, status=status.HTTP_404_NOT_FOUND)
 
     histories = (
         QuizHistory.objects
-        .filter(quiz=history.quiz, quiz_time=history.quiz_time)
+        .filter(game_id=game_id)
         .select_related("user")
         .order_by("-score", "user__username")
     )
@@ -64,10 +66,14 @@ def quiz_history_ranking(request, history_id):
         }
         for item in histories
     ]
+    
+    print(ranking)
+
 
     return Response({
-        "quiz_name": history.quiz.name,
-        "date": str(history.quiz_time),
-        "own_score": history.score or 0,
+        "game_id": str(game_id),
+        "quiz_name": user_history.quiz.name,
+        "date": str(user_history.quiz_time),
+        "own_score": user_history.score or 0,
         "ranking": ranking
     })

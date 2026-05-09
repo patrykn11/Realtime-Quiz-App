@@ -27,7 +27,7 @@ function App() {
         <Route path='LobbyRoom/:room_code' element={<LobbyRoomPage/>}/>
         <Route path='QuizPage/:room_code' element={<QuizPage/>}/>
         <Route path='Profile' element={<ProfilePage/>}/>
-        <Route path='Profile/history/:historyId' element={<QuizHistoryRankingPage/>}/>
+        <Route path='Profile/history/:gameId' element={<QuizHistoryRankingPage/>}/>
 
       </Route>
     </Routes>

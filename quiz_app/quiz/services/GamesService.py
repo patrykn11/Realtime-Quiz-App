@@ -1,5 +1,6 @@
 import time
 import json
+import uuid
 from quiz.models import Quiz, Question, Choice, QuizHistory 
 from asgiref.sync import sync_to_async
 from django.core.exceptions import ObjectDoesNotExist
@@ -7,7 +8,7 @@ from django.contrib.auth.models import User
 from quiz.redis_client import async_redis_client as redis_client
 
 class GameService:
-    QUESTION_TIME = 10  
+    QUESTION_TIME = 3  
     ROOM_TTL = 3600    
 
     @staticmethod
@@ -16,6 +17,10 @@ class GameService:
         users_key = f"{room_key}:users"
         ans_key = f"game:{room_code}:{username}" if username else None
         return room_key, users_key, ans_key
+
+    @staticmethod
+    def get_correct_answers_key(room_code):
+        return f"game:{room_code}:correct_answers"
 
     @classmethod
     async def get_initial_state(cls, room_code, username):
@@ -46,6 +51,23 @@ class GameService:
                 await pipe.execute()
             return True
         return False
+
+    @classmethod
+    async def set_correct_answers(cls, room_code, questions):
+        correct_answers_key = cls.get_correct_answers_key(room_code)
+        mapping = {
+            str(index): str(question["correct_ans"])
+            for index, question in enumerate(questions)
+        }
+
+        if not mapping:
+            return
+
+        async with redis_client.pipeline(transaction=True) as pipe:
+            await pipe.delete(correct_answers_key)
+            await pipe.hset(correct_answers_key, mapping=mapping)
+            await pipe.expire(correct_answers_key, cls.ROOM_TTL)
+            await pipe.execute()
 
     @classmethod
     async def set_current_question(cls, room_code, index, question_data):
@@ -117,28 +139,72 @@ class GameService:
         if not user_answers:
             return 0
 
-        questions = await cls.get_questions_by_quiz_name(quiz_name)
+        correct_answers = await redis_client.hgetall(cls.get_correct_answers_key(room_code))
+        if not correct_answers:
+            questions = await cls.get_questions_by_quiz_name(quiz_name)
+            correct_answers = {
+                str(index): str(question["correct_ans"])
+                for index, question in enumerate(questions)
+            }
+
         score = 0
-        for idx, q in enumerate(questions):
-            q_id_str = str(idx)
-            if q_id_str in user_answers:
-                try:
-                    user_ans = int(user_answers[q_id_str])
-                    if user_ans == q["correct_ans"]:
-                        score += 1
-                except (ValueError, TypeError):
-                    continue
+        for question_index, correct_answer in correct_answers.items():
+            if question_index not in user_answers:
+                continue
+
+            try:
+                user_ans = int(user_answers[question_index])
+                if user_ans == int(correct_answer):
+                    score += 1
+            except (ValueError, TypeError):
+                continue
         return score
+
+    @classmethod
+    async def get_question_results(cls, room_code, question_index):
+        _, users_key, _ = cls.get_keys(room_code)
+        correct_answers_key = cls.get_correct_answers_key(room_code)
+        correct_answer = await redis_client.hget(correct_answers_key, str(question_index))
+        users = await redis_client.smembers(users_key)
+
+        results = []
+        for username in users:
+            _, _, ans_key = cls.get_keys(room_code, username)
+            answer = await redis_client.hget(ans_key, str(question_index))
+
+            try:
+                answer_index = int(answer) if answer is not None else None
+                is_correct = answer_index == int(correct_answer)
+            except (ValueError, TypeError):
+                answer_index = None
+                is_correct = False
+
+            results.append({
+                "username": username,
+                "answer": answer_index,
+                "is_correct": is_correct
+            })
+
+        return {
+            "correct_answer": int(correct_answer) if correct_answer is not None else None,
+            "results": sorted(results, key=lambda item: item["username"])
+        }
     
     @classmethod
     async def save_quiz(cls, room_code, quiz_name):
         usernames = await cls.get_users_in_room(room_code)
         quiz = await sync_to_async(Quiz.objects.get)(name=quiz_name)
+        game_id = uuid.uuid4()
 
         for username in usernames:
             score = await cls.get_score(room_code, username, quiz_name)
             user = await sync_to_async(User.objects.get)(username=username)
-            await sync_to_async(QuizHistory.objects.create)(user=user, quiz=quiz, score=score)
+            await sync_to_async(QuizHistory.objects.create)(
+                game_id=game_id,
+                user=user,
+                quiz=quiz,
+                score=score
+            )
 
     @classmethod
     async def get_quiz_name(cls, room_code):
