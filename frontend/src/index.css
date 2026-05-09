@@ -1,13 +1,13 @@
 @import "tailwindcss";
 
-/* Całkowity reset marginesów i paddingów narzuconych przez Vite */
+/* rem padding */
 :root, body, html, #root {
   margin: 0 !important;
   padding: 0 !important;
   width: 100% !important;
   height: 100% !important;
-  max-width: none !important; /* To usuwa biały pasek po bokach */
-  display: block !important;  /* To usuwa centrowanie body */
+  max-width: none !important; /* remove white line */
+  display: block !important;  /* rem body center */
 }
 
 * {
