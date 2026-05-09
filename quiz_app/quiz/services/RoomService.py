@@ -1,8 +1,4 @@
-import redis.asyncio as redis
-from django.conf import settings
-
-REDIS_URL = f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}"
-redis_client = redis.from_url(REDIS_URL, decode_responses=True)
+from quiz.redis_client import async_redis_client as redis_client
 
 
 class RoomService:

@@ -1,13 +1,9 @@
 import random
-import redis
-from django.conf import settings
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from quiz.models import Quiz
-
-REDIS_URL = f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}"
-redis_client = redis.from_url(REDIS_URL, decode_responses=True)
+from quiz.redis_client import redis_client
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])

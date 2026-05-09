@@ -9,4 +9,4 @@ class QuizHistorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = QuizHistory
-        fields = ("quiz_name", "score", "created_at")
+        fields = ("id", "quiz_name", "score", "created_at")

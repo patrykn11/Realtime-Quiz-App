@@ -1,14 +1,10 @@
 import time
 import json
-import redis.asyncio as redis
-from django.conf import settings
 from quiz.models import Quiz, Question, Choice, QuizHistory 
 from asgiref.sync import sync_to_async
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import User
-
-REDIS_URL = f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}"
-redis_client = redis.from_url(REDIS_URL, decode_responses=True)
+from quiz.redis_client import async_redis_client as redis_client
 
 class GameService:
     QUESTION_TIME = 10  

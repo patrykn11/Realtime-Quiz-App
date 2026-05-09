@@ -16,7 +16,7 @@ export default function Question({ question, answers, onAnswer, timeLeft, select
         </div>
       </div>
 
-      <h2 className="text-4xl md:text-6xl font-black text-center mb-12 tracking-tight">
+      <h2 className="text-4xl md:text-6xl font-black text-center mb-12">
         {question}
       </h2>
 
@@ -28,7 +28,7 @@ export default function Question({ question, answers, onAnswer, timeLeft, select
               key={index}
               className={`w-full py-5 px-8 rounded-full text-2xl font-bold shadow-md transition-all
                 ${isSelected 
-                  ? "bg-indigo-600 text-white border border-indigo-700 shadow-xl scale-[1.02]" 
+                  ? "bg-indigo-600 text-white border border-indigo-700 shadow-xl" 
                   : "bg-white text-gray-800 border border-gray-100 hover:shadow-lg hover:bg-gray-50"
                 }`}
               onClick={() => onAnswer(index)}

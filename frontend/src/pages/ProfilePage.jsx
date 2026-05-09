@@ -2,11 +2,13 @@ import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../components/LoginContext";
 import { API_URL } from "../config";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { useNavigate } from "react-router-dom";
 
 export default function ProfilePage() {
   const { token } = useContext(AuthContext);
   const [stats, setStats] = useState([]);
   const [chartData, setChartData] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -78,7 +80,11 @@ export default function ProfilePage() {
           <tbody className="text-black">
             {stats.length > 0 ? (
               stats.map((item, i) => (
-                <tr key={i} className="border-b border-gray-100 even:bg-[#F8F9FA]">
+                <tr
+                  key={item.id ?? i}
+                  onClick={() => item.id && navigate(`/Profile/history/${item.id}`)}
+                  className="border-b border-gray-100 even:bg-[#F8F9FA] cursor-pointer hover:bg-[#F4E8EC] transition-colors"
+                >
                   <td className="px-6 py-4 font-medium text-gray-700">{item.quiz_name}</td>
                   <td className="px-6 py-4 text-center font-bold text-[#7A1E31]">{item.score} pts</td>
                   <td className="px-6 py-4 text-right text-sm text-gray-500">
