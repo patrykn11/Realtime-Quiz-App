@@ -7,16 +7,16 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: postgres_test  # osobna baza dla testów
+      POSTGRES_DB: postgres_test
     ports:
-      - "5433:5432"  # inny port niż prod
+      - "5433:5432"
     volumes:
       - postgres_data_test:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   redis:
     image: redis:7
@@ -25,25 +25,32 @@ services:
       - "6380:6379"
     volumes:
       - redis_data_test:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   web:
-    build: ./quiz_app 
-    container_name: quiz_web_test
-
-    volumes:
-      - ./quiz_app:/app
-    environment:
-      - DATABASE_URL=postgres://postgres:password@db:5432/postgres_test
-      - REDIS_URL=redis://redis:6379/0
-      - DJANGO_SETTINGS_MODULE=core.settings_test
-      - PYTHONUNBUFFERED=1
-    command: python manage.py test -v 2
-    entrypoint: ""
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_started
+      build: ./quiz_app 
+      container_name: quiz_web_test
+      volumes:
+        - ./quiz_app:/app
+      environment:
+        - DATABASE_URL=postgres://postgres:password@db:5432/postgres_test
+        - REDIS_URL=redis://redis:6379/0
+        - DJANGO_SETTINGS_MODULE=core.settings_test
+        - PYTHONUNBUFFERED=1
+      # Zmiana tutaj: najpierw migracje, potem testy
+      command: >
+        sh -c "python manage.py migrate && 
+              python manage.py test -v 2"
+      entrypoint: ""
+      depends_on:
+        db:
+          condition: service_healthy
+        redis:
+          condition: service_started
 
 volumes:
   postgres_data_test:
