@@ -21,9 +21,9 @@ const Sidebar = () => {
     navigate("/Profile")
   }
   return (
-    <div className="w-64 h-screen bg-linear-to-r from-[#693620] to-[#9e3636] text-white flex flex-col p-4 shadow-xl">
+    <div className="w-full md:w-64 md:h-screen bg-linear-to-r from-[#693620] to-[#9e3636] text-white flex-shrink-0 flex flex-col p-4 shadow-xl">
 
-      <div className="flex flex-col gap-10 py-10">
+      <div className="flex flex-row flex-wrap justify-center gap-4 py-4 md:flex-col md:gap-10 md:py-10">
         {items.map((item) => (
           <button
             key={item.name}
@@ -34,7 +34,7 @@ const Sidebar = () => {
           </button>
         ))}
 
-         <div className="flex flex-col gap-10">
+         <div className="flex flex-row flex-wrap justify-center gap-4 md:flex-col md:gap-10">
           {token ? (<>
             <button onClick={logout} className="hover:bg-black font-mono">
               Logout

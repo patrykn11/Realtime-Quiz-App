@@ -39,20 +39,20 @@ export default function LoginPage() {
     const data = await response.json();
     setToken(data.access);  
     return data;
-    };
+  };
 
   return (
-    <div className="flex flex-row absolute top-[30vh] left-1/2 -translate-x-1/2 gap-50">
-    <div className="flex flex-col items-center justify-center gap-10">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center gap-12 px-4 py-10 text-white lg:flex-row lg:gap-24">
+    <div className="flex w-full max-w-xs flex-col items-center justify-center gap-6">
         <div className="font-mono ">LOGIN</div>
       <input
-        className="bg-white rounded-xl text-black px-4 py-2"
+        className="w-full bg-white rounded-xl text-black px-4 py-2"
         placeholder="login"
         value={login}
         onChange={(e) => setLogin(e.target.value)}
       />
       <input
-        className="bg-white rounded-xl text-black px-4 py-2"
+        className="w-full bg-white rounded-xl text-black px-4 py-2"
         placeholder="password"
         type="password"
         value={password}
@@ -61,16 +61,16 @@ export default function LoginPage() {
       <button className="font-mono hover:bg-white" onClick={() => loginUser(login, password)}>Login</button>
       
     </div>
-        <div className="flex flex-col items-center justify-center gap-10">
+        <div className="flex w-full max-w-xs flex-col items-center justify-center gap-6">
             <div className="font-mono ">REGISTER</div>
       <input
-        className="bg-white rounded-xl text-black px-4 py-2"
+        className="w-full bg-white rounded-xl text-black px-4 py-2"
         placeholder="login"
         value={Reglogin}
         onChange={(e) => setRegLogin(e.target.value)}
       />
       <input
-        className="bg-white rounded-xl text-black px-4 py-2"
+        className="w-full bg-white rounded-xl text-black px-4 py-2"
         placeholder="password"
         type="password"
         value={Regpassword}
