@@ -18,12 +18,12 @@ A simple real-time quiz application. The project includes a Django/Channels back
 - Realtime/cache: Redis
 - Environment: Docker Compose
 
-## Screenshots
+## Game Screenshots
 
 <p>
-  <img src="img/lobby_room.png" alt="Quiz room lobby" width="280">
-  <img src="img/quiz_answer.png" alt="Answering a quiz question" width="280">
-  <img src="img/quiz_result.png" alt="Quiz results" width="280">
+  <img src="img/lobby_room.png" alt="Quiz room lobby">
+  <img src="img/quiz_answer.png" alt="Answering a quiz question">
+  <img src="img/quiz_result.png" alt="Quiz results">
 </p>
 
 ## Getting Started
