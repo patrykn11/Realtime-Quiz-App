@@ -22,6 +22,7 @@ A simple real-time quiz application. The project includes a Django/Channels back
 
 <p>
   <img src="img/lobby_room.png" alt="Quiz room lobby">
+  <img src="img/quiz_answer2.png" alt="Answering a quiz question 2">
   <img src="img/quiz_answer.png" alt="Answering a quiz question">
   <img src="img/quiz_result.png" alt="Quiz results">
 </p>
