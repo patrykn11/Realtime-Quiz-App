@@ -32,10 +32,10 @@ services:
       retries: 10
 
   web:
-      build: ./quiz_app 
+      build: ./backend
       container_name: quiz_web_test
       volumes:
-        - ./quiz_app:/app
+        - ./backend:/app
       environment:
         - DATABASE_URL=postgres://postgres:password@db:5432/postgres_test
         - REDIS_URL=redis://redis:6379/0

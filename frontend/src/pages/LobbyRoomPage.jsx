@@ -65,7 +65,7 @@ export default function RoomPage() {
           {users.map((user, index) => (
             <UserBlock key={index} name={user} />
           ))}
-          <button onClick={sendMessage}>GRAJ</button>
+          <button onClick={sendMessage}>PLAY</button>
         </div>
       </div>
     </div>

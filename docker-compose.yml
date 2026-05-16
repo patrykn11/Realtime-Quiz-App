@@ -27,7 +27,7 @@ services:
       - redis_data:/data
 
   web:
-    build: ./quiz_app
+    build: ./backend
     container_name: quiz_web
     volumes:
       - .:/app
