@@ -3,3 +3,5 @@ __pycache__
 migrations
 !backend/quiz/migrations/
 !backend/quiz/migrations/*.py
+.env
+env

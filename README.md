@@ -38,6 +38,20 @@ After startup, the application is available at:
 - Frontend: `http://localhost:5173`
 - Backend API: `http://localhost:8000`
 
+## Adding a Quiz
+
+After a fresh clone, the database is empty. To add the sample quiz, run:
+
+```bash
+docker compose exec web python quiz/script.py
+```
+
+You can also create quizzes through the backend API:
+
+```text
+POST http://localhost:8000/api/create_quiz/
+```
+
 Stop the containers:
 
 ```bash

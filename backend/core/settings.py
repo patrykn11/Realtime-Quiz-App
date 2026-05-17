@@ -1,9 +1,13 @@
+import os
 from pathlib import Path
 from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-u(plaq#$%rq+e(+8-%k4v!2=#9(9e3nmo(8!exkx)ig$+o)dk3'
+SECRET_KEY = os.getenv(
+    "SECRET_KEY",
+    "django-insecure-u(plaq#$%rq+e(+8-%k4v!2=#9(9e3nmo(8!exkx)ig$+o)dk3",
+) # example jwt key for local dev
 
 DEBUG = True
 
