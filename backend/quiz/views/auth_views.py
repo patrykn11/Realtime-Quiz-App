@@ -1,29 +1,29 @@
 from django.contrib.auth.models import User
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenObtainPairView
-from quiz.models import QuizHistory
 
-@api_view(["POST"])
-def register_user(request):
-    username = request.data.get("username")
-    password = request.data.get("password")
 
-    if not username or not password:
-        return Response({"detail": "error"}, status=status.HTTP_400_BAD_REQUEST)
+class RegisterUserAPIView(APIView):
+    def post(self, request):
+        username = request.data.get("username")
+        password = request.data.get("password")
 
-    if User.objects.filter(username=username).exists():
-        return Response({"detail": "user exists"}, status=status.HTTP_400_BAD_REQUEST)
+        if not username or not password:
+            return Response({"detail": "error"}, status=status.HTTP_400_BAD_REQUEST)
 
-    user = User.objects.create_user(username=username, password=password)
-    user.save()
+        if User.objects.filter(username=username).exists():
+            return Response(
+                {"detail": "user exists"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-    refresh = RefreshToken.for_user(user)
-    return Response({
-        "refresh": str(refresh),
-        "access": str(refresh.access_token)
-    }, status=status.HTTP_201_CREATED)
+        user = User.objects.create_user(username=username, password=password)
+        refresh = RefreshToken.for_user(user)
 
-login_user = TokenObtainPairView.as_view()
+        return Response(
+            {
+                "refresh": str(refresh),
+                "access": str(refresh.access_token)
+            }, status=status.HTTP_201_CREATED)

@@ -61,5 +61,5 @@ docker compose down
 ## Tests
 
 ```bash
-docker compose -f docker-compose.test.yml up --build
+docker compose run --rm --build test
 ```
