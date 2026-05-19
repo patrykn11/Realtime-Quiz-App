@@ -8,7 +8,7 @@ from django.core.asgi import get_asgi_application
 
 django_asgi_application = get_asgi_application()
 
-from applications.users.middleware import JWTAuthMiddleware
+from users.middleware import JWTAuthMiddleware
 from config.routing import websocket_urlpatterns
 
 

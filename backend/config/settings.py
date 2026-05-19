@@ -22,14 +22,14 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "channels",
     "corsheaders",
-    "applications.legacy_quiz.apps.LegacyQuizConfig",
-    "applications.users.apps.UsersConfig",
-    "applications.quizzes.apps.QuizzesConfig",
-    "applications.questions.apps.QuestionsConfig",
-    "applications.choices.apps.ChoicesConfig",
-    "applications.histories.apps.HistoriesConfig",
-    "applications.rooms.apps.RoomsConfig",
-    "applications.games.apps.GamesConfig",
+    "legacy_quiz.apps.LegacyQuizConfig",
+    "users.apps.UsersConfig",
+    "quizzes.apps.QuizzesConfig",
+    "questions.apps.QuestionsConfig",
+    "choices.apps.ChoicesConfig",
+    "histories.apps.HistoriesConfig",
+    "rooms.apps.RoomsConfig",
+    "games.apps.GamesConfig",
 ]
 
 MIDDLEWARE = [
