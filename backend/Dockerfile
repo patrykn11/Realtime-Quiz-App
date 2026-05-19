@@ -13,7 +13,7 @@ RUN printf '#!/bin/sh\nset -e\n\
 if [ -f "backend/manage.py" ]; then\n\
   cd backend\n\
 elif [ ! -f "manage.py" ]; then\n\
-  django-admin startproject core .\n\
+  django-admin startproject config .\n\
 fi\n\
 python manage.py migrate --noinput\n\
 exec python manage.py runserver 0.0.0.0:8000\n' > /start.sh && chmod +x /start.sh

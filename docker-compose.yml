@@ -43,7 +43,7 @@ services:
     volumes:
       - ./backend:/app
     environment:
-      - DJANGO_SETTINGS_MODULE=core.settings_test
+      - DJANGO_SETTINGS_MODULE=config.settings_test
       - PYTHONUNBUFFERED=1
     entrypoint: ""
     command: python manage.py test -v 2

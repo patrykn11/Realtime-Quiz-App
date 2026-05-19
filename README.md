@@ -18,6 +18,21 @@ A simple real-time quiz application. The project includes a Django/Channels back
 - Realtime/cache: Redis
 - Environment: Docker Compose
 
+## Backend Structure
+
+The Django backend is split into small domain applications under
+`backend/applications`:
+
+- `users` — registration, JWT endpoints, and WebSocket authentication,
+- `quizzes`, `questions`, `choices`, `histories` — one Django app per model,
+- `rooms` — lobby API, Redis service, and room consumer,
+- `games` — gameplay service and game consumer,
+- `common` — shared infrastructure such as Redis clients.
+
+Project-wide settings, URL configuration, and ASGI/WSGI entry points live in
+`backend/config`. The `legacy_quiz` app contains only the migration bridge that
+keeps existing `quiz_*` database tables and their data intact.
+
 ## Game Screenshots
 
 <p>
@@ -43,7 +58,7 @@ After startup, the application is available at:
 After a fresh clone, the database is empty. To add the sample quiz, run:
 
 ```bash
-docker compose exec web python quiz/script.py
+docker compose exec web python manage.py seed_quiz
 ```
 
 You can also create quizzes through the backend API:
