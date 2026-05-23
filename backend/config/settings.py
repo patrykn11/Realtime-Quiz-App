@@ -22,7 +22,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "channels",
     "corsheaders",
-    "legacy_quiz.apps.LegacyQuizConfig",
     "users.apps.UsersConfig",
     "quizzes.apps.QuizzesConfig",
     "questions.apps.QuestionsConfig",
