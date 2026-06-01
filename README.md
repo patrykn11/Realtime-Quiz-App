@@ -20,8 +20,8 @@ A simple real-time quiz application. The project includes a Django/Channels back
 
 ## Backend Structure
 
-The Django backend is split into small domain applications under
-`backend/applications`:
+The Django backend is split into small domain applications directly under
+`backend`, next to the `config` package:
 
 - `users` — registration, JWT endpoints, and WebSocket authentication,
 - `quizzes`, `questions`, `choices`, `histories` — one Django app per model,
@@ -30,8 +30,7 @@ The Django backend is split into small domain applications under
 - `common` — shared infrastructure such as Redis clients.
 
 Project-wide settings, URL configuration, and ASGI/WSGI entry points live in
-`backend/config`. The `legacy_quiz` app contains only the migration bridge that
-keeps existing `quiz_*` database tables and their data intact.
+`backend/config`.
 
 ## Game Screenshots
 

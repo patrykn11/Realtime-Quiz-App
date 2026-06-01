@@ -1,7 +1,7 @@
 __pycache__
 .DS_Store
 migrations
-!backend/quiz/migrations/
-!backend/quiz/migrations/*.py
+!backend/*/migrations/
+!backend/*/migrations/*.py
 .env
 env
