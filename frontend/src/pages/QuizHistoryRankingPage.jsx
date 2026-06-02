@@ -1,22 +1,19 @@
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AuthContext } from "../components/LoginContext";
-import { API_URL } from "../config";
 
 export default function QuizHistoryRankingPage() {
   const { gameId } = useParams();
-  const { token } = useContext(AuthContext);
+  const { token, apiFetch } = useContext(AuthContext);
   const navigate = useNavigate();
   const [rankingData, setRankingData] = useState(null);
 
   useEffect(() => {
     const fetchRanking = async () => {
-      const headers = { Authorization: `Bearer ${token}` };
-
       try {
-        const response = await fetch(`${API_URL}/api/quiz_history/${gameId}/ranking/`, { headers });
+        const response = await apiFetch(`/api/quiz_history/${gameId}/ranking/`);
         if (!response.ok) {
-          navigate("/Profile");
+          navigate("/profile");
           return;
         }
         
@@ -25,12 +22,12 @@ export default function QuizHistoryRankingPage() {
         setRankingData(data);
       } catch (err) {
         console.error("Fetch error:", err);
-        navigate("/Profile");
+        navigate("/profile");
       }
     };
 
     if (token) fetchRanking();
-  }, [gameId, navigate, token]);
+  }, [apiFetch, gameId, navigate, token]);
 
   const scores = rankingData?.ranking ?? [];
 

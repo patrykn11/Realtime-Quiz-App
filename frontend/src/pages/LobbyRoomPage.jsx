@@ -3,7 +3,7 @@ import { AuthContext } from "../components/LoginContext";
 import { useParams, useNavigate } from "react-router-dom";
 import UserBlock from "../components/UserBlock";
 
-export default function RoomPage() {
+export default function LobbyRoomPage() {
   const { room_code } = useParams();
   const { token } = useContext(AuthContext);
   const [users, setUsers] = useState([]);
@@ -24,7 +24,7 @@ export default function RoomPage() {
         setUsers(data.users);
       }
       if (data.type === "game_started" && isEffectActive) {
-        navigate(`/QuizPage/${room_code}`);
+        navigate(`/quiz/${room_code}`);
          
       }
     };
@@ -36,7 +36,7 @@ export default function RoomPage() {
 
       const errorCodes = [4401, 4404, 1006];
       if (isEffectActive && errorCodes.includes(event.code)) {
-        navigate("/PinPage");
+        navigate("/join");
       }
     };
 

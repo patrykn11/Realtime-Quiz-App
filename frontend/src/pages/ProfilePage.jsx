@@ -1,23 +1,21 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../components/LoginContext";
-import { API_URL } from "../config";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { useNavigate } from "react-router-dom";
 
 export default function ProfilePage() {
-  const { token } = useContext(AuthContext);
+  const { token, apiFetch } = useContext(AuthContext);
   const [stats, setStats] = useState([]);
   const [chartData, setChartData] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
-      const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
       try {
-        const resStats = await fetch(`${API_URL}/api/user_stats/`, { headers });
+        const resStats = await apiFetch("/api/user_stats/");
         const dataStats = await resStats.json();
         setStats(dataStats);
-        const resChart = await fetch(`${API_URL}/api/user_stats_per_day/`, { headers });
+        const resChart = await apiFetch("/api/user_stats_per_day/");
         const dataChart = await resChart.json();
         setChartData(dataChart);
       } catch (err) {
@@ -25,7 +23,7 @@ export default function ProfilePage() {
       }
     };
     if (token) fetchData();
-  }, [token]);
+  }, [token, apiFetch]);
 
 
   return (
@@ -82,7 +80,7 @@ export default function ProfilePage() {
               stats.map((item, i) => (
                 <tr
                   key={item.id ?? i}
-                  onClick={() => item.game_id && navigate(`/Profile/history/${item.game_id}`)}
+                  onClick={() => item.game_id && navigate(`/profile/history/${item.game_id}`)}
                   className="border-b border-gray-100 even:bg-[#F8F9FA] cursor-pointer hover:bg-[#F4E8EC] transition-colors"
                 >
                   <td className="px-6 py-4 font-medium text-gray-700">{item.quiz_name}</td>

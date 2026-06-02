@@ -70,7 +70,7 @@ export default function QuizPage() {
       }
     };
 
-    socket.onclose = () => { if (isEffectActive) navigate("/PinPage"); };
+    socket.onclose = () => { if (isEffectActive) navigate("/join"); };
 
     return () => {
       isEffectActive = false;

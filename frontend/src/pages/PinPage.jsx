@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {useNavigate} from "react-router-dom";
 
 
@@ -7,7 +7,7 @@ export default function PinPage() {
   const navigate = useNavigate();
 
   const join_room = async () =>{
-    navigate(`/LobbyRoom/${code}`);
+    navigate(`/lobby/${code}`);
   }
     
     

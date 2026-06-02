@@ -1,6 +1,4 @@
-import { useState } from "react";
-
-export default function UserBlock({ name, score = 0 }) {
+export default function UserBlock({ name }) {
   return (
     <div className="w-full max-w-2xl bg-white/30 backdrop-blur-md border border-white/20 shadow-xl p-4 rounded-2xl flex items-center justify-between">
       <div className="flex items-center gap-4">
