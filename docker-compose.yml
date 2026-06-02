@@ -1,7 +1,7 @@
 services:
   db:
     image: postgres:15
-    container_name: quiz_db
+    container_name: db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
@@ -20,9 +20,9 @@ services:
     volumes:
       - redis_data:/data
 
-  web:
+  backend:
     build: ./backend
-    container_name: quiz_web
+    container_name: backend
     volumes:
       - ./backend:/app
     ports:
@@ -56,7 +56,7 @@ services:
   frontend:
     build: ./frontend
     depends_on:
-      - web
+      - backend
     ports:
       - "5173:5173"
     volumes:
