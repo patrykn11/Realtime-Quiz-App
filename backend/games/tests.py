@@ -3,15 +3,16 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from asgiref.sync import async_to_sync
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.test import SimpleTestCase, TestCase
 
-from choices.models import Choice
 from games.consumers import GameConsumer
 from games.services import GameService
 from histories.models import QuizHistory
-from questions.models import Question
-from quizzes.models import Quiz
+from quizzes.models import Choice, Question, Quiz
+
+
+User = get_user_model()
 
 
 def make_async_pipeline():
@@ -24,8 +25,8 @@ def make_async_pipeline():
 
 class GameServiceTest(TestCase):
     def setUp(self):
-        quiz = Quiz.objects.create(name="sample")
-        question = Question.objects.create(quiz=quiz, text="2+2")
+        self.quiz = Quiz.objects.create(name="sample")
+        question = Question.objects.create(quiz=self.quiz, text="2+2")
         Choice.objects.create(question=question, text="3", is_correct=False)
         Choice.objects.create(question=question, text="4", is_correct=True)
 
@@ -48,13 +49,13 @@ class GameServiceTest(TestCase):
         )
 
     def test_get_questions_by_quiz(self):
-        result = async_to_sync(GameService.get_questions_by_quiz_name)("sample")
+        result = async_to_sync(GameService.get_questions_by_quiz_id)(self.quiz.id)
 
         self.assertEqual(result[0]["answers"], ["3", "4"])
         self.assertEqual(result[0]["correct_ans"], 1)
 
     def test_get_questions_returns_empty_list_for_unknown_quiz(self):
-        result = async_to_sync(GameService.get_questions_by_quiz_name)("unknown")
+        result = async_to_sync(GameService.get_questions_by_quiz_id)(999999)
 
         self.assertEqual(result, [])
 
@@ -110,7 +111,7 @@ class GameServiceTest(TestCase):
     def test_get_score(self, mock_redis):
         mock_redis.hgetall = AsyncMock(side_effect=[{"0": "1"}, {"0": "1"}])
 
-        score = async_to_sync(GameService.get_score)("room1", "john", "sample")
+        score = async_to_sync(GameService.get_score)("room1", "john", self.quiz.id)
 
         self.assertEqual(score, 1)
 
@@ -118,13 +119,13 @@ class GameServiceTest(TestCase):
     def test_get_score_returns_zero_without_answers(self, mock_redis):
         mock_redis.hgetall = AsyncMock(return_value={})
 
-        score = async_to_sync(GameService.get_score)("room1", "john", "sample")
+        score = async_to_sync(GameService.get_score)("room1", "john", self.quiz.id)
 
         self.assertEqual(score, 0)
 
     @patch.object(
         GameService,
-        "get_questions_by_quiz_name",
+        "get_questions_by_quiz_id",
         new_callable=AsyncMock,
     )
     @patch("games.services.redis_client")
@@ -134,10 +135,10 @@ class GameServiceTest(TestCase):
         mock_redis.hgetall = AsyncMock(side_effect=[{"0": "1"}, {}])
         mock_questions.return_value = [{"correct_ans": 1}]
 
-        score = async_to_sync(GameService.get_score)("room1", "john", "sample")
+        score = async_to_sync(GameService.get_score)("room1", "john", self.quiz.id)
 
         self.assertEqual(score, 1)
-        mock_questions.assert_awaited_once_with("sample")
+        mock_questions.assert_awaited_once_with(self.quiz.id)
 
     @patch("games.services.redis_client")
     def test_get_score_ignores_invalid_answer_value(self, mock_redis):
@@ -145,7 +146,7 @@ class GameServiceTest(TestCase):
             side_effect=[{"0": "not-a-number"}, {"0": "1"}]
         )
 
-        score = async_to_sync(GameService.get_score)("room1", "john", "sample")
+        score = async_to_sync(GameService.get_score)("room1", "john", self.quiz.id)
 
         self.assertEqual(score, 0)
 
@@ -287,13 +288,13 @@ class GameServiceTest(TestCase):
         )
 
     @patch("games.services.redis_client")
-    def test_get_quiz_name_reads_room_hash(self, mock_redis):
-        mock_redis.hget = AsyncMock(return_value="sample")
+    def test_get_quiz_id_reads_room_hash(self, mock_redis):
+        mock_redis.hget = AsyncMock(return_value="7")
 
-        result = async_to_sync(GameService.get_quiz_name)("room1")
+        result = async_to_sync(GameService.get_quiz_id)("room1")
 
-        self.assertEqual(result, "sample")
-        mock_redis.hget.assert_awaited_once_with("room:room1", "quiz_name")
+        self.assertEqual(result, "7")
+        mock_redis.hget.assert_awaited_once_with("room:room1", "quiz_id")
 
     @patch("games.services.redis_client")
     def test_get_users_in_room(self, mock_redis):
@@ -309,12 +310,16 @@ class GameServiceTest(TestCase):
     def test_save_quiz_creates_history_for_every_player(
         self, mock_users, mock_score
     ):
-        User.objects.create_user(username="john", password="pass")
-        User.objects.create_user(username="anna", password="pass")
+        User.objects.create_user(
+            username="john", email="john@example.com", password="pass"
+        )
+        User.objects.create_user(
+            username="anna", email="anna@example.com", password="pass"
+        )
         mock_users.return_value = ["john", "anna"]
         mock_score.side_effect = [2, 1]
 
-        async_to_sync(GameService.save_quiz)("room1", "sample")
+        async_to_sync(GameService.save_quiz)("room1", self.quiz.id)
 
         histories = list(QuizHistory.objects.order_by("user__username"))
         self.assertEqual(len(histories), 2)
@@ -327,7 +332,7 @@ class GameConsumerTests(SimpleTestCase):
         consumer = GameConsumer()
         consumer.room_code = "room1"
         consumer.group_name = "game_room1"
-        consumer.quiz_name = "sample"
+        consumer.quiz_id = 7
         consumer.user = SimpleNamespace(username="john", is_authenticated=True)
         consumer.channel_layer = MagicMock()
         consumer.channel_layer.group_send = AsyncMock()

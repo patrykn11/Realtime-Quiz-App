@@ -32,7 +32,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_add(self.group_name, self.channel_name)
         await self.accept()
         self.owner = room_data.get("owner")
-        self.quiz_name = await GameService.get_quiz_name(self.room_code)
+        self.quiz_id = await GameService.get_quiz_id(self.room_code)
 
         if room_data.get("is_run") == "true":
             await self.handle_reconnect()
@@ -65,7 +65,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             )
 
     async def start_quiz_loop(self):
-        questions = await GameService.get_questions_by_quiz_name(self.quiz_name)
+        questions = await GameService.get_questions_by_quiz_id(self.quiz_id)
         await GameService.set_correct_answers(self.room_code, questions)
 
         for index, question in enumerate(questions):
@@ -92,7 +92,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             await asyncio.sleep(2)
 
         await GameService.set_game_finished(self.room_code)
-        await GameService.save_quiz(self.room_code, self.quiz_name)
+        await GameService.save_quiz(self.room_code, self.quiz_id)
         await self.send_scores_to_all()
         await self.channel_layer.group_send(
             self.group_name, {"type": "game_over_trigger"}
@@ -111,7 +111,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             {
                 "username": username,
                 "score": await GameService.get_score(
-                    self.room_code, username, self.quiz_name
+                    self.room_code, username, self.quiz_id
                 ),
             }
             for username in users

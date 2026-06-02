@@ -4,12 +4,10 @@ import uuid
 
 from asgiref.sync import sync_to_async
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ObjectDoesNotExist
 
 from common.redis import async_redis_client as redis_client
 from histories.models import QuizHistory
-from questions.models import Question
-from quizzes.models import Quiz
+from quizzes.models import Question, Quiz
 
 
 class GameService:
@@ -103,12 +101,11 @@ class GameService:
         await redis_client.hset(room_key, "is_run", "end")
 
     @classmethod
-    async def get_questions_by_quiz_name(cls, quiz_name):
+    async def get_questions_by_quiz_id(cls, quiz_id):
         @sync_to_async
         def fetch_questions():
-            try:
-                quiz = Quiz.objects.get(name=quiz_name)
-            except ObjectDoesNotExist:
+            quiz = Quiz.objects.filter(id=quiz_id).first()
+            if quiz is None:
                 return []
 
             questions = Question.objects.filter(quiz=quiz).prefetch_related(
@@ -137,7 +134,7 @@ class GameService:
         return await fetch_questions()
 
     @classmethod
-    async def get_score(cls, room_code, username, quiz_name):
+    async def get_score(cls, room_code, username, quiz_id):
         _, _, answers_key = cls.get_keys(room_code, username)
         user_answers = await redis_client.hgetall(answers_key)
         if not user_answers:
@@ -147,7 +144,7 @@ class GameService:
             cls.get_correct_answers_key(room_code)
         )
         if not correct_answers:
-            questions = await cls.get_questions_by_quiz_name(quiz_name)
+            questions = await cls.get_questions_by_quiz_id(quiz_id)
             correct_answers = {
                 str(index): str(question["correct_ans"])
                 for index, question in enumerate(questions)
@@ -196,14 +193,14 @@ class GameService:
         }
 
     @classmethod
-    async def save_quiz(cls, room_code, quiz_name):
+    async def save_quiz(cls, room_code, quiz_id):
         usernames = await cls.get_users_in_room(room_code)
-        quiz = await Quiz.objects.aget(name=quiz_name)
+        quiz = await Quiz.objects.aget(id=quiz_id)
         user_model = get_user_model()
         game_id = uuid.uuid4()
 
         for username in usernames:
-            score = await cls.get_score(room_code, username, quiz_name)
+            score = await cls.get_score(room_code, username, quiz_id)
             user = await user_model.objects.aget(username=username)
             await QuizHistory.objects.acreate(
                 game_id=game_id,
@@ -213,9 +210,9 @@ class GameService:
             )
 
     @classmethod
-    async def get_quiz_name(cls, room_code):
+    async def get_quiz_id(cls, room_code):
         room_key, _, _ = cls.get_keys(room_code)
-        return await redis_client.hget(room_key, "quiz_name")
+        return await redis_client.hget(room_key, "quiz_id")
 
     @classmethod
     async def get_users_in_room(cls, room_code):

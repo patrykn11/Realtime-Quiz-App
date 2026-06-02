@@ -1,7 +1,7 @@
 import uuid
 from datetime import date
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils import timezone
 from rest_framework import status
@@ -16,9 +16,14 @@ from histories.serializers import (
 from quizzes.models import Quiz
 
 
+User = get_user_model()
+
+
 class QuizHistoryModelAndSerializerTests(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(username="player", password="pass")
+        self.user = User.objects.create_user(
+            username="player", email="player@example.com", password="pass"
+        )
         self.quiz = Quiz.objects.create(name="History Quiz")
         self.history = QuizHistory.objects.create(
             user=self.user,
@@ -68,7 +73,9 @@ class QuizHistoryModelAndSerializerTests(TestCase):
 class StatsApiTests(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.user = User.objects.create_user(username="test", password="pass")
+        self.user = User.objects.create_user(
+            username="test", email="test@example.com", password="pass"
+        )
         self.client.force_authenticate(user=self.user)
         self.quiz = Quiz.objects.create(name="sample_quiz")
 
@@ -98,7 +105,9 @@ class StatsApiTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_user_stats_contains_only_requesting_users_histories(self):
-        other_user = User.objects.create_user(username="other", password="pass")
+        other_user = User.objects.create_user(
+            username="other", email="other@example.com", password="pass"
+        )
         self.create_history(score=10)
         self.create_history(user=other_user, score=20)
 
@@ -181,8 +190,12 @@ class StatsApiTests(TestCase):
 
     def test_ranking_orders_scores_descending_then_usernames(self):
         game_id = uuid.uuid4()
-        anna = User.objects.create_user(username="anna", password="pass")
-        bob = User.objects.create_user(username="bob", password="pass")
+        anna = User.objects.create_user(
+            username="anna", email="anna@example.com", password="pass"
+        )
+        bob = User.objects.create_user(
+            username="bob", email="bob@example.com", password="pass"
+        )
         self.create_history(score=5, game_id=game_id)
         self.create_history(user=bob, score=10, game_id=game_id)
         self.create_history(user=anna, score=10, game_id=game_id)
@@ -199,7 +212,9 @@ class StatsApiTests(TestCase):
         )
 
     def test_ranking_returns_404_when_user_did_not_play_game(self):
-        other = User.objects.create_user(username="other", password="pass")
+        other = User.objects.create_user(
+            username="other", email="other@example.com", password="pass"
+        )
         game_id = uuid.uuid4()
         self.create_history(user=other, score=10, game_id=game_id)
 
