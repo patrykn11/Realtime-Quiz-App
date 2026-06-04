@@ -1,10 +1,9 @@
 from urllib.parse import parse_qs
 
 from channels.middleware import BaseMiddleware
-from django.conf import settings
 from django.contrib.auth import get_user_model
-from jwt import decode as jwt_decode
-from jwt.exceptions import InvalidTokenError
+from rest_framework_simplejwt.settings import api_settings
+from rest_framework_simplejwt.tokens import AccessToken, TokenError
 
 
 class JWTAuthMiddleware(BaseMiddleware):
@@ -18,9 +17,13 @@ class JWTAuthMiddleware(BaseMiddleware):
 
         user_model = get_user_model()
         try:
-            payload = jwt_decode(token[0], settings.SECRET_KEY, algorithms=["HS256"])
-            scope["user"] = await user_model.objects.aget(id=payload["user_id"])
-        except (InvalidTokenError, KeyError, user_model.DoesNotExist, ValueError):
+            access_token = AccessToken(token[0])
+            user = await user_model.objects.aget(
+                id=access_token[api_settings.USER_ID_CLAIM],
+                is_active=True,
+            )
+            scope["user"] = user
+        except (TokenError, KeyError, user_model.DoesNotExist, ValueError):
             await send({"type": "websocket.close", "code": 4401})
             return
 
