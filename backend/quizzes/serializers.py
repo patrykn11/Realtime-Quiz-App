@@ -1,10 +1,61 @@
 from django.db import transaction
 from rest_framework import serializers
 
-from choices.models import Choice
-from questions.models import Question
-from questions.serializers import QuestionCreateSerializer
-from .models import Quiz
+from .models import Choice, Question, Quiz
+
+
+class QuizListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Quiz
+        fields = ("id", "name")
+
+
+class MyQuizListSerializer(serializers.ModelSerializer):
+    question_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Quiz
+        fields = ("id", "name", "created_at", "question_count")
+
+
+class ChoiceCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Choice
+        fields = ("text", "is_correct")
+
+
+class ChoiceDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Choice
+        fields = ("id", "text", "is_correct")
+
+
+class QuestionCreateSerializer(serializers.ModelSerializer):
+    choices = ChoiceCreateSerializer(many=True)
+
+    class Meta:
+        model = Question
+        fields = ("text", "choices")
+
+    def validate_choices(self, value):
+        if len(value) < 2:
+            raise serializers.ValidationError("question must have at least two choices")
+
+        correct_choices = [choice for choice in value if choice.get("is_correct")]
+        if len(correct_choices) != 1:
+            raise serializers.ValidationError(
+                "question must have exactly one correct choice"
+            )
+
+        return value
+
+
+class QuestionDetailSerializer(serializers.ModelSerializer):
+    choices = ChoiceDetailSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Question
+        fields = ("id", "text", "created_at", "choices")
 
 
 class QuizCreateSerializer(serializers.ModelSerializer):
@@ -12,7 +63,8 @@ class QuizCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Quiz
-        fields = ("name", "questions")
+        fields = ("name", "owner", "questions")
+        read_only_fields = ("owner",)
 
     def validate_name(self, value):
         if Quiz.objects.filter(name=value).exists():
@@ -40,3 +92,40 @@ class QuizCreateSerializer(serializers.ModelSerializer):
                 )
 
         return quiz
+
+
+class QuizUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Quiz
+        fields = ("name",)
+
+    def validate_name(self, value):
+        duplicate_exists = (
+            Quiz.objects.filter(name=value)
+            .exclude(pk=self.instance.pk)
+            .exists()
+        )
+
+        if duplicate_exists:
+            raise serializers.ValidationError("quiz with this name exists")
+
+        return value
+
+
+class QuizDetailSerializer(serializers.ModelSerializer):
+    owner = serializers.CharField(
+        source="owner.username",
+        read_only=True,
+        allow_null=True,
+    )
+    questions = QuestionDetailSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Quiz
+        fields = ("id", "name", "owner", "created_at", "questions")
+
+
+class QuestionUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Question
+        fields = ("text",)
