@@ -3,6 +3,8 @@ import { AuthContext } from "../components/LoginContext";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { useNavigate } from "react-router-dom";
 
+import MyQuizzes from "../components/MyQuizzes";
+
 export default function ProfilePage() {
   const { token, apiFetch } = useContext(AuthContext);
   const [stats, setStats] = useState([]);
@@ -28,7 +30,8 @@ export default function ProfilePage() {
 
   return (
     <div className="flex flex-col items-center p-10 gap-10 w-full">
-      
+      <MyQuizzes />
+
       <h1 className="text-4xl font-bold text-white shadow-sm">
         Your statistics
       </h1>

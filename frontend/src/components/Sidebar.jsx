@@ -29,6 +29,14 @@ export default function Sidebar() {
             {item.name}
           </button>
         ))}
+        {token && (
+          <button
+            onClick={() => navigate("/create-quiz")}
+            className="font-mono hover:bg-black"
+          >
+            Create quiz
+          </button>
+        )}
       </nav>
 
       <div className="flex flex-row flex-wrap justify-center gap-4 border-white/20 pt-4 md:mt-auto md:flex-col md:border-t md:pb-6">
