@@ -5,16 +5,17 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from common.redis import redis_client
-from quizzes.models import Quiz
+
+from .serializers import RoomCreateSerializer
 
 
 class CreateRoomAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        quiz_name = request.data.get("quiz_name")
-        if not Quiz.objects.filter(name=quiz_name).exists():
-            return Response({"error": "Quiz does not exist"}, status=404)
+        serializer = RoomCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        quiz = serializer.validated_data["quiz"]
 
         while True:
             room_code = "".join(
@@ -28,7 +29,8 @@ class CreateRoomAPIView(APIView):
             mapping={
                 "owner": request.user.username,
                 "status": "waiting",
-                "quiz_name": quiz_name,
+                "quiz_id": quiz.id,
+                "quiz_name": quiz.name,
             },
         )
         return Response({"room_code": room_code, "status": "ok"})

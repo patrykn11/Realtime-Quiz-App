@@ -3,7 +3,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, call, patch
 
 from asgiref.sync import async_to_sync
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.test import SimpleTestCase, TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -11,6 +11,9 @@ from rest_framework.test import APIClient
 from quizzes.models import Quiz
 from rooms.consumers import RoomConsumer
 from rooms.services import RoomService
+
+
+User = get_user_model()
 
 
 def make_async_pipeline(execute_result=None):
@@ -25,9 +28,11 @@ def make_async_pipeline(execute_result=None):
 class RoomApiTests(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.user = User.objects.create_user(username="test", password="pass")
+        self.user = User.objects.create_user(
+            username="test", email="test@example.com", password="pass"
+        )
         self.client.force_authenticate(user=self.user)
-        Quiz.objects.create(name="sample_quiz")
+        self.quiz = Quiz.objects.create(name="sample_quiz")
 
     @patch("rooms.views.redis_client")
     @patch("rooms.views.random.choices")
@@ -37,7 +42,7 @@ class RoomApiTests(TestCase):
 
         response = self.client.post(
             "/api/create_room/",
-            {"quiz_name": "sample_quiz"},
+            {"quiz_id": self.quiz.id},
             format="json",
         )
 
@@ -47,6 +52,7 @@ class RoomApiTests(TestCase):
             mapping={
                 "owner": "test",
                 "status": "waiting",
+                "quiz_id": self.quiz.id,
                 "quiz_name": "sample_quiz",
             },
         )
@@ -54,7 +60,7 @@ class RoomApiTests(TestCase):
     def test_create_room_requires_authentication(self):
         response = APIClient().post(
             "/api/create_room/",
-            {"quiz_name": "sample_quiz"},
+            {"quiz_id": self.quiz.id},
             format="json",
         )
 
@@ -64,12 +70,12 @@ class RoomApiTests(TestCase):
     def test_create_room_rejects_unknown_quiz(self, mock_redis):
         response = self.client.post(
             "/api/create_room/",
-            {"quiz_name": "unknown"},
+            {"quiz_id": 999999},
             format="json",
         )
 
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertEqual(response.data, {"error": "Quiz does not exist"})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("quiz_id", response.data)
         mock_redis.exists.assert_not_called()
         mock_redis.hset.assert_not_called()
 
@@ -81,7 +87,7 @@ class RoomApiTests(TestCase):
 
         response = self.client.post(
             "/api/create_room/",
-            {"quiz_name": "sample_quiz"},
+            {"quiz_id": self.quiz.id},
             format="json",
         )
 
