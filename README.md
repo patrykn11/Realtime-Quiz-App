@@ -24,7 +24,8 @@ The Django backend is split into small domain applications directly under
 `backend`, next to the `config` package:
 
 - `users` — registration, JWT endpoints, and WebSocket authentication,
-- `quizzes`, `questions`, `choices`, `histories` — one Django app per model,
+- `quizzes` — quizzes, questions, and answer choices,
+- `histories` — played-game history,
 - `rooms` — lobby API, Redis service, and room consumer,
 - `games` — gameplay service and game consumer,
 - `common` — shared infrastructure such as Redis clients.
@@ -57,7 +58,7 @@ After startup, the application is available at:
 After a fresh clone, the database is empty. To add the sample quiz, run:
 
 ```bash
-docker compose exec web python manage.py seed_quiz
+docker compose exec backend python manage.py seed_quiz
 ```
 
 You can also create quizzes through the backend API:
@@ -77,3 +78,26 @@ docker compose down
 ```bash
 docker compose run --rm --build test
 ```
+
+## Authentication API
+
+The authentication flow uses a custom `users.User` model and rotating JWTs:
+
+- `POST /api/register/` — `username`, `email`, `password`, `password_confirm`,
+- `POST /api/login/` — `username`, `password`,
+- `POST /api/token/refresh/` — rotates a refresh token,
+- `GET /api/me/` — returns the authenticated user,
+- `POST /api/logout/` — blacklists the supplied refresh token.
+
+When upgrading a database created before the custom user model was introduced,
+preserve the existing `auth_user` table and mark the compatibility migration as
+already represented by that table before starting the updated backend:
+
+```bash
+docker compose exec -T db psql -U postgres -d postgres -c \
+  "INSERT INTO django_migrations (app, name, applied) SELECT 'users', '0001_initial', NOW() WHERE to_regclass('public.auth_user') IS NOT NULL AND NOT EXISTS (SELECT 1 FROM django_migrations WHERE app = 'users' AND name = '0001_initial');"
+docker compose run --rm --entrypoint python backend manage.py migrate
+```
+
+The next migration preserves user IDs, assigns reserved placeholder addresses to
+legacy accounts without e-mail, and then enforces unique e-mail addresses.
