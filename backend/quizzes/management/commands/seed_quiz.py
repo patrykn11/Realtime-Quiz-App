@@ -1,8 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from choices.models import Choice
-from questions.models import Question
-from quizzes.models import Quiz
+from quizzes.models import Choice, Question, Quiz
 
 
 class Command(BaseCommand):
