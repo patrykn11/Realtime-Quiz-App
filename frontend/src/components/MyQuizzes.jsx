@@ -110,14 +110,24 @@ export default function MyQuizzes() {
                   {new Date(quiz.created_at).toLocaleDateString()}
                 </p>
               </div>
-              <button
-                type="button"
-                disabled={deletingQuizId === quiz.id}
-                className="rounded-xl border border-red-700 px-4 py-2 font-mono text-red-700 hover:bg-red-700 hover:text-white disabled:cursor-wait disabled:opacity-50"
-                onClick={() => deleteQuiz(quiz)}
-              >
-                {deletingQuizId === quiz.id ? "Deleting..." : "Delete"}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  disabled={deletingQuizId === quiz.id}
+                  className="rounded-xl border border-[#7A1E31] px-4 py-2 font-mono text-[#7A1E31] hover:bg-[#7A1E31] hover:text-white disabled:opacity-50"
+                  onClick={() => navigate(`/quizzes/${quiz.id}/edit`)}
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  disabled={deletingQuizId === quiz.id}
+                  className="rounded-xl border border-red-700 px-4 py-2 font-mono text-red-700 hover:bg-red-700 hover:text-white disabled:cursor-wait disabled:opacity-50"
+                  onClick={() => deleteQuiz(quiz)}
+                >
+                  {deletingQuizId === quiz.id ? "Deleting..." : "Delete"}
+                </button>
+              </div>
             </article>
           ))}
         </div>
