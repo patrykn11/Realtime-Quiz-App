@@ -5,6 +5,7 @@ import { AuthProvider } from "./components/LoginContext";
 import MainLayout from "./layout/MainLayout";
 import CreateRoomPage from "./pages/CreateRoomPage";
 import CreateQuizPage from "./pages/CreateQuizPage";
+import EditQuizPage from "./pages/EditQuizPage";
 import LobbyRoomPage from "./pages/LobbyRoomPage";
 import LoginPage from "./pages/LoginPage";
 import PinPage from "./pages/PinPage";
@@ -25,6 +26,7 @@ export default function App() {
             <Route path="register" element={<RegisterPage />} />
             <Route path="create-room" element={<CreateRoomPage />} />
             <Route path="create-quiz" element={<CreateQuizPage />} />
+            <Route path="quizzes/:quizId/edit" element={<EditQuizPage />} />
             <Route path="lobby/:room_code" element={<LobbyRoomPage />} />
             <Route path="quiz/:room_code" element={<QuizPage />} />
             <Route path="profile" element={<ProfilePage />} />
