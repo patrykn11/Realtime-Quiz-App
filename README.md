@@ -1,6 +1,6 @@
 # Realtime Quiz App
 
-A simple real-time quiz application. The project includes a Django/Channels backend, a React frontend, and PostgreSQL and Redis services managed with Docker Compose.
+A real-time quiz application. The project includes a Django/Channels backend, a React frontend, and PostgreSQL and Redis services managed with Docker Compose.
 
 ## Main Features
 
